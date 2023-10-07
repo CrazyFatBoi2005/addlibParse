@@ -15,6 +15,11 @@ def index():
     return render_template("main.html")
 
 
+@app.route('/', methods=["POST"])
+def add_new_account():
+    return render_template("main.html")
+
+
 @app.route('/ads', methods=["GET", "POST"])
 def ads():
     return render_template("page.html")
