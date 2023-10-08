@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, request
 
 from db_data import db_session
 
@@ -11,18 +11,21 @@ app.config['SECRET_KEY'] = "NikitinPlaxin315240"
 
 
 @app.route('/', methods=["GET", "POST"])
+@app.route('/index', methods=["GET", "POST"])
 def index():
-    return render_template("main.html")
-
-
-@app.route('/', methods=["POST"])
-def add_new_account():
     return render_template("main.html")
 
 
 @app.route('/ads', methods=["GET", "POST"])
 def ads():
     return render_template("page.html")
+
+
+@app.route('/add_new_page', methods=["POST"])
+def add_new_page():
+    form = request.form
+    account_link = form.get("account-link")
+    return redirect(f"/index")
 
 
 def main():

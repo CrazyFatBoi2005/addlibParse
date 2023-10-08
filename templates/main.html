@@ -465,7 +465,7 @@
         </section>
         <section class="modal__add-new-page-window" id="modal-window">
             <div class="modal-wrapper">
-                <form action="" class="add-new-page__form">
+                <form method="post" action="{{ url_for('add_new_page') }}" class="add-new-page__form">
                     <div class="title-close">
                         <h3 class="modal-title">Add new page</h3>
                         <button class="modal__close-btn" id="close-modal">
@@ -477,8 +477,8 @@
                         </button>
                     </div>
                     <div class="url-wrapper">
-                        <label>Page URL*</label>
-                        <input class="page-url-field" type="text" placeholder="Facebook Ads Page URL">
+                        <label for="account-link">Page URL*</label>
+                        <input class="page-url-field" name="account-link" type="text" placeholder="Facebook Ads Page URL" required>
                     </div>
                     <div class="add-setting__wrapper">
                         <ul class="options-list">
