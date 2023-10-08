@@ -1,3 +1,4 @@
+import requests
 from flask import Flask, render_template, redirect, request
 
 from db_data import db_session
@@ -25,10 +26,17 @@ def ads():
 def add_new_page():
     form = request.form
     account_link = form.get("account-link")
+    requests.post(f"http://127.0.0.1:8800/add_new_account/182714625642338")
+    return redirect(f"/index")
+
+
+@app.route("/ok_status", methods=["POST"])
+def ok_status():
     return redirect(f"/index")
 
 
 def main():
+
     db_session.global_init("db/accounts.db")
     app.run()
 

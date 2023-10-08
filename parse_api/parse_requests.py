@@ -1,11 +1,9 @@
 import time
-from classes import *
-import requests
+from parse_api.classes import *
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
 
 nike_url = "https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&view_all_page_id" \
            "=15087023444&search_type=page&media_type=all "
@@ -53,5 +51,5 @@ def parse_page(url: str, filters: dict):
 
     account.active_ads = account.count_active()
     print(account.get_data())
-    time.sleep(1000)
     driver.close()
+    return account

@@ -1,4 +1,4 @@
-from parse_requests import parse_page
+from parse_api.parse_requests import parse_page
 
 
 if __name__ == "__main__":
