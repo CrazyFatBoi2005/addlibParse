@@ -26,7 +26,7 @@ def ads():
 
 
 @app.route('/add_new_page', methods=["POST"])
-async def add_new_page():
+def add_new_page():
     form = request.form
     account_link = form.get("account-link")
     account_link = account_link.strip()

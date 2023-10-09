@@ -6,6 +6,7 @@ from parse_api.classes import *
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
+from selenium.webdriver.edge.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 from data.accounts import Account as ApiAccount
 from data.advertisement import Advertisements
@@ -21,7 +22,9 @@ nike_url = "https://www.facebook.com/ads/library/?active_status=all&ad_type=all&
 def parse_page(url: str, filters: dict):
 
     account = Account(url)
-    driver = webdriver.Edge()
+    options = Options()
+    options.add_argument("--headless")
+    driver = webdriver.Edge(options=options)
     driver.get(url)
     _ = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//div[@class='xh8yej3']")))
     time.sleep(2)
@@ -60,7 +63,6 @@ def parse_page(url: str, filters: dict):
     account.active_ads = account.count_active()
     print(account.get_data())
     driver.close()
-    print(account.id)
 
     db_session.global_init("../databases/accounts.db")
     db_sess = db_session.create_session()
@@ -81,10 +83,11 @@ def parse_page(url: str, filters: dict):
         api_ads.ad_image = ad.download
         api_ads.ad_text = ad.text
         api_ads.ad_buttonStatus = ad.buttonText
-        # api_ads.ad_daysActive = ad.duration
+        api_ads.ad_daysActive = ad.duration
         api_ads.ad_mediaType = ad.media_type
         api_ads.ad_landingLink = ad.landing
         api_ads.ad_downloadLink = ad.download
+        api_ads.ad_platform = ad.platforms
         api_ads.account_id = account.id
         db_sess.add(api_ads)
     db_sess.commit()

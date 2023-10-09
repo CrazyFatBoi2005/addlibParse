@@ -1,13 +1,12 @@
-import random
 import datetime
 import urllib.request
 from bs4 import BeautifulSoup
 
 platform_styles = {
-    "width: 12px; height: 12px; -webkit-mask-image: url(&quot;https://static.xx.fbcdn.net/rsrc.php/v3/yl/r/1IflondRoFA.png&quot;); -webkit-mask-size: 122px 404px; -webkit-mask-position: -104px -270px;": "Facebook",
-    "width: 12px; height: 12px; -webkit-mask-image: url(&quot;https://static.xx.fbcdn.net/rsrc.php/v3/y0/r/Phy2uucwc_B.png&quot;); -webkit-mask-size: 30px 668px; -webkit-mask-position: -16px -564px;": "Instagram",
-    "width: 12px; height: 12px; -webkit-mask-image: url(&quot;https://static.xx.fbcdn.net/rsrc.php/v3/yl/r/1IflondRoFA.png&quot;); -webkit-mask-size: 122px 404px; -webkit-mask-position: -108px -190px;": "Audience Network",
-    "width: 12px; height: 12px; -webkit-mask-image: url(&quot;https://static.xx.fbcdn.net/rsrc.php/v3/yl/r/1IflondRoFA.png&quot;); -webkit-mask-size: 122px 404px; -webkit-mask-position: -108px -308px;": "Messenger",
+    'width: 12px; height: 12px; -webkit-mask-image: url("https://static.xx.fbcdn.net/rsrc.php/v3/y0/r/QELw80WZC8L.png"); -webkit-mask-position: -51px -335px;': "Facebook",
+    'width: 12px; height: 12px; -webkit-mask-image: url("https://static.xx.fbcdn.net/rsrc.php/v3/y7/r/RBY2XQNTT-A.png"); -webkit-mask-position: -14px -545px;': "Instagram",
+    'width: 12px; height: 12px; -webkit-mask-image: url("https://static.xx.fbcdn.net/rsrc.php/v3/y0/r/QELw80WZC8L.png"); -webkit-mask-position: -106px -186px;': "Audience Network",
+    'width: 12px; height: 12px; -webkit-mask-image: url("https://static.xx.fbcdn.net/rsrc.php/v3/y0/r/QELw80WZC8L.png"); -webkit-mask-position: -64px -335px;': "Messenger",
 }
 
 dates = {
@@ -57,12 +56,13 @@ class Ad:
             try:
                 self.download = soup.find("div", class_="x1ywc1zp x78zum5 xl56j7k x1e56ztr xh8yej3").find("video").get(
                     "src")
-                urllib.request.urlretrieve(self.download, f'./videos/{self.id}.mp4')
+                # download link ^^^ for .mp4
+                # urllib.request.urlretrieve(self.download, f'./videos/{self.id}.mp4')
+                # download script ^^^
                 self.media_type = "Video"
             except:
-                print(self.id)
+                self.download = soup.find("img", class_="x1ll5gia x19kjcj4 x642log").get("src")
                 self.media_type = "Carousel"
-                self.download = "bad type media"
 
         try:
             self.status = soup.find("span", class_="x8t9es0 xw23nyj xo1l8bm x63nzvj x108nfp6 xq9mrsl x1h4wwuj xeuugli "
@@ -76,16 +76,16 @@ class Ad:
         day, month, year = int(date[2]), dates[date[3]], int(date[4])
         self.start_date = datetime.date(year, month, day)
 
-        self.duration = datetime.date.today() - self.start_date
-
+        self.duration = str((datetime.date.today() - self.start_date).days)
         self.platforms = []
         for platform in soup.find_all("div", class_="xtwfq29"):
-            if platform in platform_styles.keys():
+            if platform['style'] in platform_styles.keys():
                 self.platforms.append(platform_styles[platform['style']])
+        self.platforms = ";".join(self.platforms)
 
     def get_data(self):
         return self.id, self.text, self.buttonText, self.landing, self.download, self.status, str(self.start_date), \
-               str(self.duration.days), *self.platforms
+               self.duration, *self.platforms
 
 
 class Account:
