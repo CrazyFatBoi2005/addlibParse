@@ -10,6 +10,8 @@ class Account(SqlAlchemyBase):
     id = sqlalchemy.Column(sqlalchemy.Integer,
                            primary_key=True)
 
+    acc_id = sqlalchemy.Column(sqlalchemy.Integer)
+
     adlib_account_link = sqlalchemy.Column(sqlalchemy.String)
 
     account_name = sqlalchemy.Column(sqlalchemy.String)

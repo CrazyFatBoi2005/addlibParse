@@ -9,6 +9,7 @@ class Advertisements(SqlAlchemyBase):
 
     ad_id = sqlalchemy.Column(sqlalchemy.Integer,
                               primary_key=True)
+    ad_id_another = sqlalchemy.Column(sqlalchemy.Integer)
     ad_date = sqlalchemy.Column(sqlalchemy.String)
     ad_text = sqlalchemy.Column(sqlalchemy.String)
 
@@ -27,4 +28,4 @@ class Advertisements(SqlAlchemyBase):
 
     account_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("accounts.id"))
 
-    user = orm.relationship("Account")
+    account = orm.relationship("Account")

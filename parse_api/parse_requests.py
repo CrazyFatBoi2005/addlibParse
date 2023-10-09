@@ -1,9 +1,17 @@
 import time
+
+import requests
+
 from parse_api.classes import *
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
+from data.accounts import Account as ApiAccount
+from data.advertisement import Advertisements
+
+from data import db_session
+
 
 nike_url = "https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&view_all_page_id" \
            "=15087023444&search_type=page&media_type=all "
@@ -52,4 +60,31 @@ def parse_page(url: str, filters: dict):
     account.active_ads = account.count_active()
     print(account.get_data())
     driver.close()
-    return account
+    print(account.id)
+
+    db_session.global_init("../databases/accounts.db")
+    db_sess = db_session.create_session()
+    api_account = ApiAccount()
+    api_account.acc_id = account.id
+    api_account.account_name = account.name
+    api_account.account_username = account.nickname
+    api_account.account_image = account.image
+    api_account.account_totalAds = account.total_ads
+    api_account.adlib_account_link = account.link
+    api_account.account_activeAds = account.active_ads
+    api_account.account_socialMedia_link = account.link
+    db_sess.add(api_account)
+    for ad in account.ads:
+        print(1, ad)
+        api_ads = Advertisements()
+        api_ads.ad_id_another = ad.id
+        api_ads.ad_image = ad.download
+        api_ads.ad_text = ad.text
+        api_ads.ad_buttonStatus = ad.buttonText
+        # api_ads.ad_daysActive = ad.duration
+        api_ads.ad_mediaType = ad.media_type
+        api_ads.ad_landingLink = ad.landing
+        api_ads.ad_downloadLink = ad.download
+        api_ads.account_id = account.id
+        db_sess.add(api_ads)
+    db_sess.commit()

@@ -1,11 +1,12 @@
+import asyncio
+
 import requests
-from flask import Flask, render_template, redirect, request
+from flask import Flask, render_template, redirect, request, url_for
 
-from db_data import db_session
+from data import db_session
+from data.accounts import Account
+from data.advertisement import Advertisements
 
-from db_data import db_session
-from db_data.accounts import Account
-from db_data.advertisement import Advertisements
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "NikitinPlaxin315240"
@@ -14,7 +15,9 @@ app.config['SECRET_KEY'] = "NikitinPlaxin315240"
 @app.route('/', methods=["GET", "POST"])
 @app.route('/index', methods=["GET", "POST"])
 def index():
-    return render_template("main.html")
+    db_sess = db_session.create_session()
+    accounts = db_sess.query(Account).all()
+    return render_template("main.html", accounts=accounts)
 
 
 @app.route('/ads', methods=["GET", "POST"])
@@ -23,21 +26,24 @@ def ads():
 
 
 @app.route('/add_new_page', methods=["POST"])
-def add_new_page():
+async def add_new_page():
     form = request.form
     account_link = form.get("account-link")
-    requests.post(f"http://127.0.0.1:8800/add_new_account/182714625642338")
-    return redirect(f"/index")
+    account_link = account_link.strip()
+
+    requests.post(f"http://127.0.0.1:8800/add_new_account/{account_link}")
+    return redirect(f"/index")  # заменится всплывающим окном
 
 
-@app.route("/ok_status", methods=["POST"])
-def ok_status():
-    return redirect(f"/index")
+@app.route('/refresh', methods=["POST"])
+def refresh():
+    print(123123123)
+    return render_template("page.html")  # заменится всплывающим окном
 
 
 def main():
+    db_session.global_init("databases/accounts.db")
 
-    db_session.global_init("db/accounts.db")
     app.run()
 
 
