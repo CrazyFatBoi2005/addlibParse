@@ -36,7 +36,10 @@ class Ad:
         try:
             self.text = soup.find("div", class_="_7jyr _a25-").get_text()
         except:
-            self.text = "no text"
+            try:
+                self.text = soup.find("div", class_="_7jyr").get_text()
+            except:
+                self.text = "no text"
 
         try:
             self.buttonText = soup.find("div", class_="_8jh0").find("div", class_="x8t9es0 x1fvot60 xxio538 x1heor9g "
@@ -46,8 +49,12 @@ class Ad:
                                                                                   "xeuugli").text
         except:
             self.buttonText = "no button text"
-        self.landing = soup.find("a", class_="x1hl2dhg x1lku1pv x8t9es0 x1fvot60 xxio538 xjnfcd9 xq9mrsl x1yc453h "
-                                             "x1h4wwuj x1fcty0u x1lliihq").get("href")
+        try:
+            self.landing = soup.find("a", class_="x1hl2dhg x1lku1pv x8t9es0 x1fvot60 xxio538 xjnfcd9 xq9mrsl x1yc453h "
+                                                 "x1h4wwuj x1fcty0u x1lliihq").get("href")
+        except:
+            self.landing = "NO LANDING"
+            print(self.id, self.landing)
 
         try:
             self.download = soup.find("img", class_="x1ll5gia x19kjcj4 xh8yej3").get("src")
@@ -73,10 +80,19 @@ class Ad:
 
         date = soup.find_all("span", class_="x8t9es0 xw23nyj xo1l8bm x63nzvj x108nfp6 xq9mrsl x1h4wwuj"
                                             " xeuugli")[1].get_text().split(' ')
-        day, month, year = int(date[2]), dates[date[3]], int(date[4])
-        self.start_date = datetime.date(year, month, day)
+        try:
+            day, month, year = int(date[2]), dates[date[3]], int(date[4])
+            self.start_date = datetime.date(year, month, day)
 
-        self.duration = str((datetime.date.today() - self.start_date).days)
+            self.duration = str((datetime.date.today() - self.start_date).days)
+            self.start_date = str(self.start_date)
+        except:
+            day, month, year = int(date[1]), dates[date[2]], int(date[3])
+            self.start_date = datetime.date(year, month, day)
+            day, month, year = int(date[6]), dates[date[7]], int(date[8])
+            end_date = datetime.date(year, month, day)
+            self.duration = str((end_date - self.start_date).days)
+            self.start_date = str(self.start_date)
         self.platforms = []
         for platform in soup.find_all("div", class_="xtwfq29"):
             if platform['style'] in platform_styles.keys():
@@ -84,8 +100,8 @@ class Ad:
         self.platforms = ";".join(self.platforms)
 
     def get_data(self):
-        return self.id, self.text, self.buttonText, self.landing, self.download, self.status, str(self.start_date), \
-               self.duration, *self.platforms
+        return self.id, self.text, self.buttonText, self.landing, self.download, self.status, self.start_date, \
+               self.duration, self.platforms
 
 
 class Account:

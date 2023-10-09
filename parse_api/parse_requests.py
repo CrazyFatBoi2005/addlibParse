@@ -47,10 +47,11 @@ def parse_page(url: str, filters: dict):
         # scroll down
         print(count)
         last_len = len(page_content)
-        if len(page_content) > 300 or count >= 5:
+        if len(page_content) > 600 or count >= 5:
             break
         time.sleep(1)
         driver.execute_script('arguments[0].scrollIntoView(true)', footer)
+
 
     result = [Ad(element.get_attribute('innerHTML')) for element in page_content]
     account.ads = result.copy()
