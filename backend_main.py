@@ -28,10 +28,10 @@ def ads():
 @app.route('/add_new_page', methods=["POST"])
 def add_new_page():
     form = request.form
-    account_link = form.get("account-link")
-    account_link = account_link.strip()
-
-    requests.post(f"http://127.0.0.1:8800/add_new_account/{account_link}")
+    url = form.get("account-link")
+    url = url.strip()
+    id = url[url.find("view_all_page_id=") + len("view_all_page_id="):url.find("&sort_data")]
+    requests.post(f"http://127.0.0.1:8800/add_new_account/{id}")
     return redirect(f"/index")  # заменится всплывающим окном
 
 
