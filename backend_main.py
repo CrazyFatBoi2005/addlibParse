@@ -41,7 +41,7 @@ def add_new_page():
         return '', 204
 
     else:
-        return redirect('/index')
+        return render_template("back.html")
 
 
 @app.route('/delete_page/<int:account_id>', methods=["POST"])
