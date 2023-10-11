@@ -26,6 +26,6 @@ class Advertisements(SqlAlchemyBase):
 
     ad_image = sqlalchemy.Column(sqlalchemy.String)
 
-    account_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("accounts.id"))
+    account_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("accounts.acc_id"))
 
     account = orm.relationship("Account")

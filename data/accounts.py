@@ -10,7 +10,7 @@ class Account(SqlAlchemyBase):
     id = sqlalchemy.Column(sqlalchemy.Integer,
                            primary_key=True)
 
-    acc_id = sqlalchemy.Column(sqlalchemy.Integer)
+    acc_id = sqlalchemy.Column(sqlalchemy.Integer, unique=True)
 
     adlib_account_link = sqlalchemy.Column(sqlalchemy.String)
 

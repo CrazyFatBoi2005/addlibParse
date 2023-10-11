@@ -67,6 +67,7 @@
     line-height: 18px;
     letter-spacing: 0em;
     text-align: left;
+    align-items: center;
 
 }
 
@@ -98,9 +99,14 @@
     margin-top: 16px;
 }
 
-.channel-link {
+.channel-link-div {
     width: 224px;
-    margin-top: 16px;
+    display: flex;
+    align-items: center;
+}
+
+
+.channel-link {
     text-decoration: none;
 }
 
@@ -459,4 +465,65 @@
 
 .options-item-days {
     width: 150px;
+}
+
+.pages-content__content-item-link {
+    text-decoration: none;
+    color: black;
+}
+
+.box {
+   position: relative;
+   overflow:hidden;
+   width:100px;
+   height:100px;
+}
+
+.box img {
+   position: absolute;
+   top:50%;
+   left:50%;
+   transform:translate(-50%,-50%);
+   width:100px;
+   height:100px;
+   object-fit:cover;
+}
+
+.delete-button {
+    all: unset;
+    cursor: pointer;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #f4f4f4;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    z-index: 1;
+    opacity: 1;
+    transform: translateY(20px);
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.modal.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.modal-content {
+    text-align: center;
+}
+
+.close {
+    float: right;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: red;
 }

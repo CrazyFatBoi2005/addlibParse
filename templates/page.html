@@ -39,107 +39,24 @@
                         <p class="landing-characteristics characteristics-text">Landing</p>
                         </div>
                     </li>
+                    {% for ad in ads %}
                     <li class="ads-content__content-item">
                         <div class="ads-content-item-describer">
-                            <img src="images/ad-avatar.png" alt="" width="100" height="60">
+                            <div class="box">
+                                <img src="{{ad.ad_image}}" alt="">
+                            </div>
                             <div class="ads-user-naming__wrapper">
-                                <h4 class="ads-num no-margins">1664772730669539</h4>
+                                <h4 class="ads-num no-margins">{{ad.ad_id_another}}</h4>
                                 <p class="ads-date no-margins">Aug 30, 2023</p>
                             </div>
                         </div>
-                        <p class="text-st">Train up to 7 days a week with custom
-                            workouts and unlimited support - work 1:1 with
-                            your own trainer at home, the gym, or anywhere anytime.</p>
-                        <p class="cta-st no-margins">Sign Up</p>
-                        <p class="days-active-st no-margins">12</p>
-                        <a href="" class="file-st no-margins">Download File</a>
-                        <a href="" class="landing-st no-margins">Landing</a>
+                        <p class="text-st">{{ad.ad_text}}</p>
+                        <p class="cta-st no-margins">{{ad.ad_buttonStatus}}</p>
+                        <p class="days-active-st no-margins">{{ad.ad_daysActive}}</p>
+                        <a href="{{ad.ad_downloadLink}}" class="file-st no-margins">Download File</a>
+                        <a href="{{ad.ad_landingLink}}" class="landing-st no-margins">Landing</a>
                     </li>
-
-                    <li class="ads-content__content-item">
-                        <div class="ads-content-item-describer">
-                            <img src="../static/images/ad-avatar.png" alt="" width="100" height="60">
-                            <div class="ads-user-naming__wrapper">
-                                <h4 class="ads-num no-margins">1664772730669539</h4>
-                                <p class="ads-date no-margins">Aug 30, 2023</p>
-                            </div>
-                        </div>
-                        <p class="text-st">Train up to 7 days a week with custom
-                            workouts and unlimited support - work 1:1 with
-                            your own trainer at home, the gym, or anywhere anytime.</p>
-                        <p class="cta-st no-margins">Sign Up</p>
-                        <p class="days-active-st no-margins">12</p>
-                        <a href="" class="file-st no-margins">Download File</a>
-                        <a href="" class="landing-st no-margins">Landing</a>
-                    </li>
-
-                    <li class="ads-content__content-item">
-                        <div class="ads-content-item-describer">
-                            <img src="images/ad-avatar.png" alt="" width="100" height="60">
-                            <div class="ads-user-naming__wrapper">
-                                <h4 class="ads-num no-margins">1664772730669539</h4>
-                                <p class="ads-date no-margins">Aug 30, 2023</p>
-                            </div>
-                        </div>
-                        <p class="text-st">Train up to 7 days a week with custom
-                            workouts and unlimited support - work 1:1 with
-                            your own trainer at home, the gym, or anywhere anytime.</p>
-                        <p class="cta-st no-margins">Sign Up</p>
-                        <p class="days-active-st no-margins">12</p>
-                        <a href="" class="file-st no-margins">Download File</a>
-                        <a href="" class="landing-st no-margins">Landing</a>
-                    </li>
-
-                    <li class="ads-content__content-item">
-                        <div class="ads-content-item-describer">
-                            <img src="images/ad-avatar.png" alt="" width="100" height="60">
-                            <div class="ads-user-naming__wrapper">
-                                <h4 class="ads-num no-margins">1664772730669539</h4>
-                                <p class="ads-date no-margins">Aug 30, 2023</p>
-                            </div>
-                        </div>
-                        <p class="text-st">Train up to 7 days a week with custom
-                            workouts and unlimited support - work 1:1 with
-                            your own trainer at home, the gym, or anywhere anytime.</p>
-                        <p class="cta-st no-margins">Sign Up</p>
-                        <p class="days-active-st no-margins">12</p>
-                        <a href="" class="file-st no-margins">Download File</a>
-                        <a href="" class="landing-st no-margins">Landing</a>
-                    </li>
-
-                    <li class="ads-content__content-item">
-                        <div class="ads-content-item-describer">
-                            <img src="images/ad-avatar.png" alt="" width="100" height="60">
-                            <div class="ads-user-naming__wrapper">
-                                <h4 class="ads-num no-margins">1664772730669539</h4>
-                                <p class="ads-date no-margins">Aug 30, 2023</p>
-                            </div>
-                        </div>
-                        <p class="text-st">Train up to 7 days a week with custom
-                            workouts and unlimited support - work 1:1 with
-                            your own trainer at home, the gym, or anywhere anytime.</p>
-                        <p class="cta-st no-margins">Sign Up</p>
-                        <p class="days-active-st no-margins">12</p>
-                        <a href="" class="file-st no-margins">Download File</a>
-                        <a href="" class="landing-st no-margins">Landing</a>
-                    </li>
-
-                    <li class="ads-content__content-item">
-                        <div class="ads-content-item-describer">
-                            <img src="images/ad-avatar.png" alt="" width="100" height="60">
-                            <div class="ads-user-naming__wrapper">
-                                <h4 class="ads-num no-margins">1664772730669539</h4>
-                                <p class="ads-date no-margins">Aug 30, 2023</p>
-                            </div>
-                        </div>
-                        <p class="text-st">Train up to 7 days a week with custom
-                            workouts and unlimited support - work 1:1 with
-                            your own trainer at home, the gym, or anywhere anytime.</p>
-                        <p class="cta-st no-margins">Sign Up</p>
-                        <p class="days-active-st no-margins">12</p>
-                        <a href="" class="file-st no-margins">Download File</a>
-                        <a href="" class="landing-st no-margins">Landing</a>
-                    </li>
+                    {% endfor %}
                 </ul>
             </section>
         </section>

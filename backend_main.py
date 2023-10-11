@@ -17,12 +17,15 @@ app.config['SECRET_KEY'] = "NikitinPlaxin315240"
 def index():
     db_sess = db_session.create_session()
     accounts = db_sess.query(Account).all()
-    return render_template("main.html", accounts=accounts)
+    accounts_count = len(accounts)
+    return render_template("main.html", accounts=accounts, accounts_count=accounts_count)
 
 
-@app.route('/ads', methods=["GET", "POST"])
-def ads():
-    return render_template("page.html")
+@app.route('/ads/<int:account_id>', methods=["GET", "POST"])
+def ads(account_id):
+    db_sess = db_session.create_session()
+    ads = db_sess.query(Advertisements).filter(Advertisements.account_id == account_id).all()
+    return render_template("page.html", ads=ads)
 
 
 @app.route('/add_new_page', methods=["POST"])
@@ -31,14 +34,27 @@ def add_new_page():
     url = form.get("account-link")
     url = url.strip()
     id = url[url.find("view_all_page_id=") + len("view_all_page_id="):url.find("&sort_data")]
-    requests.post(f"http://127.0.0.1:8800/add_new_account/{id}")
-    return redirect(f"/index")  # заменится всплывающим окном
+    db_sess = db_session.create_session()
+    acc_id = db_sess.query(Account).filter(Account.acc_id == id).first()
+    if acc_id is None:
+        requests.post(f"http://127.0.0.1:8800/add_new_account/{id}")
+        return '', 204
+
+    else:
+        return redirect('/index')
 
 
-@app.route('/refresh', methods=["POST"])
-def refresh():
-    print(123123123)
-    return render_template("page.html")  # заменится всплывающим окном
+@app.route('/delete_page/<int:account_id>', methods=["POST"])
+def delete_page(account_id):
+    print(account_id)
+    db_sess = db_session.create_session()
+    account = db_sess.query(Account).filter(Account.acc_id == account_id).first()
+    ads = db_sess.query(Advertisements).filter(Advertisements.account_id == account_id).all()
+    db_sess.delete(account)
+    for ad in ads:
+        db_sess.delete(ad)
+    db_sess.commit()
+    return redirect(f"/index")
 
 
 def main():

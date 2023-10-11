@@ -92,3 +92,4 @@ def parse_page(url: str, filters: dict):
         api_ads.account_id = account.id
         db_sess.add(api_ads)
     db_sess.commit()
+    requests.post("http://127.0.0.1:5000/refresh")

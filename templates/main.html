@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="../static/css/style.css" rel="stylesheet">
+
     <meta charset="utf-8">
     <title>Document</title>
 </head>
@@ -16,7 +17,7 @@
                 <div class="add-new-page__form-main">
                     <div class="add-new-page__wrapper">
                         <h3 class="no-margins ad-pages-text">Ad Pages</h3>
-                        <p class="no-margins pages-quantity-text">15 pages</p>
+                        <p class="no-margins pages-quantity-text">{{accounts_count}} pages</p>
                     </div>
                     <button class="add-new-pages-btn" id="open-modal">Add New Pages</button>
                 </div>
@@ -33,18 +34,23 @@
                     </li>
                     {% for item in accounts %}
                     <li class="pages-content__content-item">
-                        <div class="content-item-describer">
-                            <img src="{{item.account_image}}" alt="" width="40" height="40">
-                            <div class="page-user-naming__wrapper">
-                                <h4 class="channel_name no-margins">{{item.account_name}}</h4>
-                                <p class="channel_nickname no-margins">{{item.account_username}}</p>
+                        <a href="ads/{{item.acc_id}}"  class="pages-content__content-item-link">
+                            <div class="content-item-describer">
+                                <img src="{{item.account_image}}" alt="" width="40" height="40">
+                                <div class="page-user-naming__wrapper">
+                                    <h4 class="channel_name no-margins">{{item.account_name}}</h4>
+                                    <p class="channel_nickname no-margins">{{item.account_username}}</p>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                         <p class="channel-total-ads no-margins">{{item.account_totalAds}}</p>
                         <p class="channel-active-ads no-margins">{{item.account_activeAds}}</p>
-                        <a href="{{item.adlib_account_link}}" class="channel-link no-margins">Facebook Ads</a>
+                        <div class="channel-link-div">
+                            <a href="{{item.adlib_account_link}}" class="channel-link no-margins">Facebook Ads</a>
+                        </div>
                         <div class="management-links">
-                            <a href="" class="delete-channel no-margins">
+                            <form action="/delete_page/{{item.acc_id}}" method="post" class="delete-channel no-margins">
+                                <button class="delete-button">
                                 <svg width="18" height="20" viewBox="0 0 18 20" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <path
@@ -52,8 +58,8 @@
                                         stroke="#475467" stroke-width="1.66667" stroke-linecap="round"
                                         stroke-linejoin="round" />
                                 </svg>
-
-                            </a>
+                                </button>
+                            </form>
                             <a href="" class="edit-channel">
                                 <svg width="19" height="19" viewBox="0 0 19 19" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -71,7 +77,8 @@
         </section>
         <section class="modal__add-new-page-window" id="modal-window">
             <div class="modal-wrapper">
-                <form method="post" action="{{ url_for('add_new_page') }}" class="add-new-page__form">
+                <form action="{{ url_for('add_new_page') }}" method="post" id="add-page-form"
+                      class="add-new-page__form">
                     <div class="title-close">
                         <h3 class="modal-title">Add new page</h3>
                         <button class="modal__close-btn" id="close-modal">
@@ -84,7 +91,7 @@
                     </div>
                     <div class="url-wrapper">
                         <label for="account-link">Page URL*</label>
-                        <input class="page-url-field" name="account-link" type="text" placeholder="Facebook Ads Page URL" required>
+                        <input id="add-field" class="page-url-field" name="account-link" type="text" placeholder="Facebook Ads Page URL" required>
                     </div>
                     <div class="add-setting__wrapper">
                         <ul class="options-list">
@@ -116,9 +123,16 @@
                     </div>
                     <button class="options-add-new-page-btn">Add new page</button>
                 </form>
+
             </div>
         </section>
     </main>
+    <section id="modal" class="modal">
+        <div class="modal-content">
+            <span id="closeModal" class="close">&times;</span>
+            <p>Канал скоро будет добавлен!</p>
+        </div>
+    </section>
     <script src="../static/js/script.js"></script>
 </body>
 
