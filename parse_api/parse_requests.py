@@ -35,6 +35,7 @@ def parse_page(url: str, filters: dict):
     print(account.nickname)
     footer = driver.find_element(By.XPATH, "//div[@class='xq4jnbd x78zum5 xdt5ytf xr1yuqi xkrivgy x4ii5y1 x1gryazu "
                                            "x1dr75xp xz9dl7a']")
+    account.link = url
     last_len = 0
     count = 0
     while True:
@@ -83,6 +84,8 @@ def parse_page(url: str, filters: dict):
         api_ads.ad_id_another = ad.id
         api_ads.ad_image = ad.download
         api_ads.ad_text = ad.text
+        api_ads.ad_date = ad.start_date
+        api_ads.ad_daysActive = ad.duration
         api_ads.ad_buttonStatus = ad.buttonText
         api_ads.ad_daysActive = ad.duration
         api_ads.ad_mediaType = ad.media_type
