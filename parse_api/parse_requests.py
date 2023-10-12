@@ -20,17 +20,26 @@ nike_url = "https://www.facebook.com/ads/library/?active_status=all&ad_type=all&
 
 # start
 def parse_page(url: str, filters: dict):
-    url.split("?")[1].split("&")
+    based_filters = {}
+    joined_filters = []
+    url_with_filters = "https://www.facebook.com/ads/library/?"
     for s in url.split("?")[1].split("&"):
         s = s.split("=")
-        filters[s[0]] = s[1]
-    print(filters)
-    account = Account(url)
+        based_filters[s[0]] = s[1]
+    # фильтры пользователя в filters
+    for key in based_filters.keys():
+        if key in filters.keys():
+            joined_filters.append(f"{key}={filters[key]}")
+        else:
+            joined_filters.append(f"{key}={based_filters[key]}")
+
+    url_with_filters += "&".join(joined_filters)
+
     account = Account(url)
     options = Options()
     options.add_argument("--headless")
     driver = webdriver.Edge(options=options)
-    driver.get(url)
+    driver.get(url_with_filters)
     _ = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//div[@class='xh8yej3']")))
     time.sleep(2)
     account.name = driver.find_element(By.XPATH, "//div[@class='x8t9es0 x1ldc4aq x1xlr1w8 x1cgboj8 x4hq6eo xq9mrsl x1yc453h x1h4wwuj xeuugli']").text
