@@ -1,3 +1,7 @@
+body {
+    font-family: sans-serif;
+}
+
 .no-margins {
     margin: 0;
     padding: 0;
@@ -37,7 +41,7 @@
     display: flex;
     justify-content: space-between;
     padding: 10px 0 10px 0;
-    font-family: Inter;
+    
     font-size: 14px;
     font-weight: 400;
     line-height: 20px;
@@ -61,7 +65,6 @@
     display: flex;
     width: 498px;
     margin-left: 30px;
-    font-family: Inter;
     font-size: 15px;
     font-weight: 500;
     line-height: 18px;
@@ -120,7 +123,7 @@
 
 .ad-pages-text {
 
-    font-family: Inter;
+    
     font-size: 18px;
     font-weight: 600;
     line-height: 28px;
@@ -129,7 +132,6 @@
 }
 
 .pages-quantity-text {
-    font-family: Inter;
     font-size: 12px;
     font-weight: 500;
     line-height: 18px;
@@ -141,7 +143,7 @@
 }
 
 .add-new-pages-btn {
-    font-family: Inter;
+    
     font-size: 14px;
     font-weight: 300;
     line-height: 12px;
@@ -155,7 +157,7 @@
 }
 
 .characteristics-text {
-    font-family: Inter;
+    
     font-size: 12px;
     font-weight: 500;
     line-height: 18px;
@@ -165,7 +167,7 @@
 }
 
 .channel_nickname {
-    font-family: Inter;
+    
     font-size: 14px;
     font-weight: 400;
     line-height: 20px;
@@ -195,7 +197,7 @@
 }
 
 .modal-wrapper {
-    width: 640px;
+    width: 710px;
     position: absolute;
     left: 50%;
     top: 50%;
@@ -203,7 +205,7 @@
     border: 0.3px #D0D5DD solid;
     background: white;
     border-radius: 10px;
-    font-family: Inter;
+    
     font-size: 16px;
     font-weight: 500;
     line-height: 24px;
@@ -223,7 +225,7 @@
 }
 
 .modal-title {
-    font-family: Inter;
+    
     font-size: 18px;
     font-weight: 600;
     line-height: 28px;
@@ -250,7 +252,7 @@
 }
 
 .page-url-field {
-    width: 530px;
+    width: 625px;
     padding: 10px 14px;
     border: 1px #EAECF0 solid;
     border-radius: 8px;
@@ -277,7 +279,6 @@
     margin-top: 7px;
     color: #101828;
     font-weight: 550;
-    letter-spacing: 0.14em;
 }
 
 .options-add-new-page-btn {
@@ -295,12 +296,14 @@
 .back-to-pages {
     background: none;
     border: none;
-    font-family: Inter;
+    
     font-size: 14px;
     font-weight: 400;
     line-height: 20px;
     letter-spacing: 0em;
     text-align: left;
+    text-decoration: none;
+    color: black;
 }
 
 .with-back-btn-wrapper {
@@ -319,7 +322,7 @@
 .filter-btn {
     background: none;
     border: none;
-    font-family: Inter;
+    
     font-size: 14px;
     font-weight: 400;
     line-height: 20px;
@@ -334,7 +337,8 @@
 .download-media-btn {
     background: none;
     border: none;
-    font-family: Inter;
+    cursor: pointer;
+    
     font-size: 14px;
     font-weight: 400;
     line-height: 20px;
@@ -348,7 +352,8 @@
 .download-csv-btn {
     background: none;
     border: none;
-    font-family: Inter;
+    cursor: pointer;
+    
     font-size: 14px;
     font-weight: 400;
     line-height: 20px;
@@ -363,7 +368,7 @@
 .ads-quantity {
     background: #F9F5FF;
     border-radius: 5px;
-    font-family: Inter;
+    
     font-size: 12px;
     font-weight: 500;
     line-height: 18px;
@@ -377,7 +382,7 @@
 
 .ads-num {
     color: #6941C6;
-    font-family: Inter;
+    
     font-size: 14px;
     font-weight: 500;
     line-height: 20px;
@@ -388,7 +393,7 @@
 }
 
 .ads-date {
-    font-family: Inter;
+    
     font-size: 14px;
     font-weight: 500;
     line-height: 20px;
@@ -438,6 +443,7 @@
 .cta-st {
     width: 117px;
     margin: auto 0;
+    break-words: break-all;
 
 }
 
@@ -460,7 +466,7 @@
 }
 
 .ads-options-list {
-    width: 550px;
+    width: 650px;
 }
 
 .options-item-days {
@@ -497,22 +503,33 @@
 .modal {
     display: none;
     position: fixed;
+    border: 3px #6941C6 dashed;
     bottom: 20px;
     right: 20px;
     background-color: #f4f4f4;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 15px;
     padding: 10px;
     z-index: 1;
     opacity: 1;
-    transform: translateY(20px);
-    transition: opacity 0.3s, transform 0.3s;
+
 }
 
-.modal.show {
+.show {
     display: block;
-    opacity: 1;
-    transform: translateY(0);
+    animation-duration: 1s;
+    animation-name: slidein;
+}
+
+@keyframes slidein {
+  from {
+    bottom: -100px;
+    right: 20px;
+  }
+
+  to {
+    bottom: 20px;
+    right: 20px;
+  }
 }
 
 .modal-content {
@@ -526,4 +543,8 @@
 
 .close:hover {
     color: red;
+}
+
+.red-color-modal {
+    border: 3px red dashed;
 }

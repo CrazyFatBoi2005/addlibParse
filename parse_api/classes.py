@@ -27,6 +27,7 @@ dates = {
 
 class Ad:
     def __init__(self, element):
+        self.image = ""
         soup = BeautifulSoup(element, "html.parser")
 
         self.id = soup.find("span",
@@ -57,10 +58,14 @@ class Ad:
             print(self.id, self.landing)
 
         try:
+
             self.download = soup.find("img", class_="x1ll5gia x19kjcj4 xh8yej3").get("src")
-            self.media_type = "Photo"
+            self.image = self.download
+            self.media_type = "Image"
         except:
             try:
+                self.image = soup.find("div", class_="x1ywc1zp x78zum5 xl56j7k x1e56ztr xh8yej3").find("video").get(
+                    "poster")
                 self.download = soup.find("div", class_="x1ywc1zp x78zum5 xl56j7k x1e56ztr xh8yej3").find("video").get(
                     "src")
                 # download link ^^^ for .mp4
@@ -68,8 +73,16 @@ class Ad:
                 # download script ^^^
                 self.media_type = "Video"
             except:
-                self.download = soup.find("img", class_="x1ll5gia x19kjcj4 x642log").get("src")
-                self.media_type = "Carousel"
+                try:
+                    self.download = soup.find("img", class_="x1ll5gia x19kjcj4 x642log").get("src")
+                    self.image = self.download
+                    self.media_type = "Image"
+
+                except:
+                    self.download = ""
+                    self.image = self.download
+                    self.media_type = "Video"
+
 
         try:
             self.status = soup.find("span", class_="x8t9es0 xw23nyj xo1l8bm x63nzvj x108nfp6 xq9mrsl x1h4wwuj xeuugli "
