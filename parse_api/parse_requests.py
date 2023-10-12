@@ -20,7 +20,12 @@ nike_url = "https://www.facebook.com/ads/library/?active_status=all&ad_type=all&
 
 # start
 def parse_page(url: str, filters: dict):
-
+    url.split("?")[1].split("&")
+    for s in url.split("?")[1].split("&"):
+        s = s.split("=")
+        filters[s[0]] = s[1]
+    print(filters)
+    account = Account(url)
     account = Account(url)
     options = Options()
     options.add_argument("--headless")
