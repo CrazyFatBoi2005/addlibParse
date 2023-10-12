@@ -40,10 +40,13 @@ def add_new_page():
     url = form.get("account-link")
     url = url.strip()
     id = url[url.find("view_all_page_id=") + len("view_all_page_id="):url.find("&sort_data")]
+    platforms = form.get("platform")
+    media_type = form.get("media")
     db_sess = db_session.create_session()
     acc_id = db_sess.query(Account).filter(Account.acc_id == id).first()
+    print(f"http://127.0.0.1:8800/add_new_account/{id}/{platforms}/{media_type}")
     if acc_id is None:
-        requests.post(f"http://127.0.0.1:8800/add_new_account/{id}")
+        requests.post(f"http://127.0.0.1:8800/add_new_account/{id}/{platforms}/{media_type}")
         return "", 204
 
     else:

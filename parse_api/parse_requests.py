@@ -17,29 +17,31 @@ from data import db_session
 nike_url = "https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&view_all_page_id" \
            "=15087023444&search_type=page&media_type=all "
 
+rename_filter = {
+    'All Platforms': "",
+    'Facebook': "&publisher_platforms[0]=facebook",
+    'Instagram': "&publisher_platforms[0]=instagram",
+    'Audience Network': "&publisher_platforms[0]=audience_network",
+    'Messenger': "&publisher_platforms[0]=messenger",
+    'All Types': "&media_type=all",
+    'Image': "&media_type=image_and_meme",
+    'Video': "&media_type=video"
+}
+
 
 # start
-def parse_page(url: str, filters: dict):
-    based_filters = {}
-    joined_filters = []
-    url_with_filters = "https://www.facebook.com/ads/library/?"
-    for s in url.split("?")[1].split("&"):
-        s = s.split("=")
-        based_filters[s[0]] = s[1]
+def parse_page(id: str, platform: str, media: str):
+    url_with_filters = f"https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&view_all_page_id={id}{rename_filter[platform]}&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&search_type=page{rename_filter[media]}"
     # фильтры пользователя в filters
-    for key in based_filters.keys():
-        if key in filters.keys():
-            joined_filters.append(f"{key}={filters[key]}")
-        else:
-            joined_filters.append(f"{key}={based_filters[key]}")
-
-    url_with_filters += "&".join(joined_filters)
-
+    url = f"https://www.facebook.com/ads/library/?active_status=all" \
+          f"&ad_type=all&country=ALL&view_all_page_id={id}" \
+          f"&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&search_type=page&media_type=all "
     account = Account(url)
     options = Options()
     options.add_argument("--headless")
     driver = webdriver.Edge(options=options)
     driver.get(url_with_filters)
+    print(url_with_filters)
     _ = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//div[@class='xh8yej3']")))
     time.sleep(2)
     account.name = driver.find_element(By.XPATH, "//div[@class='x8t9es0 x1ldc4aq x1xlr1w8 x1cgboj8 x4hq6eo xq9mrsl x1yc453h x1h4wwuj xeuugli']").text

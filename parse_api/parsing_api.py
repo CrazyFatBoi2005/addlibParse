@@ -13,13 +13,9 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = "NikitinPlaxin31524011"
 
 
-@app.route('/add_new_account/<int:id>', methods=["POST"])
-def add_new_account(id):
-    url = f"https://www.facebook.com/ads/library/?active_status=all" \
-          f"&ad_type=all&country=ALL&view_all_page_id={id}" \
-          f"&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&search_type=page&media_type=all "
-
-    process = mp.Process(target=parse_page, args=(url, {}))
+@app.route('/add_new_account/<int:id>/<string:platform>/<string:media>', methods=["POST"])
+def add_new_account(id, platform, media):
+    process = mp.Process(target=parse_page, args=(id, platform, media))
     process.start()
 
     response = jsonify({"message": "OK"})
