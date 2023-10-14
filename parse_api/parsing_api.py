@@ -25,7 +25,7 @@ def delete_job(id):
 def add_new_account(id, platform, media):
     process = mp.Process(target=parse_page, args=(id, platform, media))
     process.start()
-    scheduler.add_job(func=update_data, args=(id, platform, media), id=str(id), trigger=IntervalTrigger(minutes=1))
+    scheduler.add_job(func=update_data, args=(id, platform, media), id=str(id), trigger=IntervalTrigger(days=1))
     response = jsonify({"message": "OK"})
     response.status_code = 200
     return response
