@@ -10,6 +10,7 @@ from parse_api.parse_requests import parse_page
 app = Flask(__name__)
 scheduler = BackgroundScheduler()
 app.config['SECRET_KEY'] = "NikitinPlaxin31524011"
+app.config['BACKEND_IP'] = "http://127.0.0.1:8800"
 
 
 @app.route('/delete_job/<int:id>', methods=["POST"])
@@ -23,9 +24,10 @@ def delete_job(id):
 
 @app.route('/add_new_account/<int:id>/<string:platform>/<string:media>', methods=["POST"])
 def add_new_account(id, platform, media):
-    process = mp.Process(target=parse_page, args=(id, platform, media))
+    process = mp.Process(target=parse_page, args=(id, platform, media, app.config.get('BACKEND_IP')))
     process.start()
-    scheduler.add_job(func=update_data, args=(id, platform, media), id=str(id), trigger=IntervalTrigger(days=1))
+    scheduler.add_job(func=update_data, args=(id, platform, media, app.config.get('BACKEND_IP')), id=str(id),
+                      trigger=IntervalTrigger(days=1))
     response = jsonify({"message": "OK"})
     response.status_code = 200
     return response

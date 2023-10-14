@@ -16,6 +16,7 @@ import zipfile
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "NikitinPlaxin315240"
+app.config['API_IP'] = "http://127.0.0.1:8800"
 socketio = SocketIO(app)
 
 
@@ -51,9 +52,8 @@ def add_new_page():
     media_type = form.get("media")
     db_sess = db_session.create_session()
     acc_id = db_sess.query(Account).filter(Account.acc_id == id).first()
-    print(f"http://127.0.0.1:8800/add_new_account/{id}/{platforms}/{media_type}")
     if acc_id is None:
-        requests.post(f"http://127.0.0.1:8800/add_new_account/{id}/{platforms}/{media_type}")
+        requests.post(f"{app.config.get('API_IP')}/add_new_account/{id}/{platforms}/{media_type}")
         return "", 204
 
     else:
@@ -71,7 +71,7 @@ def delete_page(account_id):
         db_sess.delete(ad)
     db_sess.commit()
 
-    requests.post(f"http://127.0.0.1:8800/delete_job/{account_id}")
+    requests.post(f"{app.config.get('API_IP')}/delete_job/{account_id}")
     return redirect(f"/index")
 
 

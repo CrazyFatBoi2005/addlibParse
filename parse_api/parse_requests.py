@@ -30,13 +30,12 @@ rename_filter = {
 
 
 # start
-def parse_page(id: str, platform: str, media: str):
+def parse_page(id: str, platform: str, media: str, ip):
     url_with_filters = f"https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&view_all_page_id={id}{rename_filter[platform]}&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&search_type=page{rename_filter[media]}"
     # фильтры пользователя в filters
     url = f"https://www.facebook.com/ads/library/?active_status=all" \
           f"&ad_type=all&country=ALL&view_all_page_id={id}" \
           f"&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&search_type=page&media_type=all "
-    print(url_with_filters)
     account = Account(url)
     options = Options()
     options.add_argument("--headless")
@@ -111,5 +110,5 @@ def parse_page(id: str, platform: str, media: str):
             api_ads.account_id = account.id
             db_sess.add(api_ads)
     db_sess.commit()
-    requests.post("http://127.0.0.1:5000/refresh")
+    requests.post(f"{ip}/refresh")
     print(f"Account {account.name} in databese, refresh page")
