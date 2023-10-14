@@ -89,6 +89,11 @@ def parse_page(id: str, platform: str, media: str, ip):
         db_sess.add(api_account)
         db_sess.commit()
     except IntegrityError:
+        db_sess = db_session.create_session()
+        record_to_update = db_sess.query(ApiAccount).filter(ApiAccount.acc_id == account.id).first()
+        record_to_update.account_totalAds = account.total_ads
+        record_to_update.account_activeAds = account.active_ads
+        db_sess.commit()
         print(f"Account {account.name} already exists")
 
     db_sess = db_session.create_session()
