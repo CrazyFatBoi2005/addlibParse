@@ -22,7 +22,6 @@ class Advertisements(SqlAlchemyBase):
 
     ad_platform = sqlalchemy.Column(sqlalchemy.String)
     ad_mediaType = sqlalchemy.Column(sqlalchemy.String)
-    ad_startDate = sqlalchemy.Column(sqlalchemy.String)
 
     ad_image = sqlalchemy.Column(sqlalchemy.String)
 

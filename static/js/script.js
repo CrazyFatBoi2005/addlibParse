@@ -41,3 +41,4 @@ socket.on('show_modal', function(data) {
     modal1.classList.add("red-color-modal")
     modal1P.textContent = "Аккаунт уже отслеживается!"
 });
+

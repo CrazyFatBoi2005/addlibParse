@@ -8,7 +8,7 @@ class Account(SqlAlchemyBase):
     __tablename__ = 'accounts'
 
     id = sqlalchemy.Column(sqlalchemy.Integer,
-                           primary_key=True)
+                           primary_key=True, unique=True)
 
     acc_id = sqlalchemy.Column(sqlalchemy.Integer, unique=True)
 
