@@ -514,6 +514,19 @@ body {
 
 }
 
+download-modal {
+    display: none;
+    position: fixed;
+    border: 3px #6941C6 dashed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #f4f4f4;
+    border-radius: 15px;
+    padding: 10px;
+    z-index: 1;
+    opacity: 1;
+}
+
 .show {
     display: block;
     animation-duration: 1s;
@@ -529,6 +542,25 @@ body {
   to {
     bottom: 20px;
     right: 20px;
+  }
+}
+
+
+.remove {
+    display: block;
+    animation-duration: 2s;
+    animation-name: disap;
+}
+
+@keyframes disap {
+  from {
+    display: block
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    display: none
   }
 }
 

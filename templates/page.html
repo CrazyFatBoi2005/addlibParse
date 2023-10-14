@@ -17,14 +17,19 @@
                     <div class="with-back-btn-wrapper">
                         <a href="/" class="back-to-pages">← Go back</a>
                         <div class="add-new-page__wrapper">
-                            <h3 class="no-margins ad-pages-text">Future</h3>
+                            <h3 class="no-margins ad-pages-text">{{account_name}}</h3>
                             <p class="no-margins ads-quantity">{{ads_count}} ads</p>
                         </div>
                     </div>
                     <div class="page-btns">
                         <button class="filter-btn" id="open-filter">Filter Ads</button>
-                        <button class="download-media-btn">Download Media</button>
-                        <button class="download-csv-btn">Download CSV</button>
+                        <form method="post" action="{{ url_for('download_media', account_id=account_id)}}" id="download-media-form">
+                            <button class="download-media-btn">Download Media</button>
+                        </form>
+
+                        <form  method="post" action="{{ url_for('download_csv', account_id=account_id, return_status=return_status)}}">
+                            <button class="download-csv-btn">Download CSV</button>
+                        </form>
                     </div>
                 </div>
             </section>
@@ -43,11 +48,7 @@
                     <li class="ads-content__content-item">
                         <div class="ads-content-item-describer">
                             <div class="box">
-                                {% if "video" in ad.ad_image %}
-                                    <video controlslist="nodownload" height="175" loop="" poster="https://scontent.fala4-1.fna.fbcdn.net/v/t39.35426-6/387197658_1049938962810930_106659878587317869_n.jpg?_nc_cat=102&amp;ccb=1-7&amp;_nc_sid=c53f8f&amp;_nc_ohc=RhcP40gNobYAX8Y63X3&amp;_nc_ht=scontent.fala4-1.fna&amp;oh=00_AfCC0H-vCHDrwsc23YA_SkzevX_fGZGZThXq6KzBZj3QLA&amp;oe=652C3306" src="https://scontent.fala4-2.fna.fbcdn.net/v/t42.1790-2/388883644_345226611501627_5514440256250141777_n.?_nc_cat=108&amp;ccb=1-7&amp;_nc_sid=c53f8f&amp;_nc_ohc=XOI20EtDAksAX-C9bQR&amp;_nc_ht=scontent.fala4-2.fna&amp;oh=00_AfANo7bXVdZMcRC6KqAmPWWngpPMkm8lsA5n74qhNuDA1Q&amp;oe=652D30F0" width="100%"></video>
-                                {% else %}
                                     <img src="{{ad.ad_image}}" alt="">
-                                {% endif %}
                             </div>
                             <div class="ads-user-naming__wrapper">
                                 <h4 class="ads-num no-margins">{{ad.ad_id_another}}</h4>
@@ -57,7 +58,8 @@
                         <p class="text-st">{{ad.ad_text}}</p>
                         <p class="cta-st no-margins">{{ad.ad_buttonStatus}}</p>
                         <p class="days-active-st no-margins">{{ad.ad_daysActive}}</p>
-                        <a href="{{ad.ad_downloadLink}}" class="file-st no-margins">Download File</a>
+
+                        <a href="{{ad.ad_downloadLink}}" class="file-st no-margins" download>Download File</a>
                         <a href="{{ad.ad_landingLink}}" class="landing-st no-margins">Landing</a>
                     </li>
                     {% endfor %}
@@ -69,7 +71,7 @@
                 <form method="post" id="filter-form" action="{{ url_for('filter_ads', account_id=account_id)}}" class="add-new-page__form">
                     <div class="title-close">
                         <h3 class="modal-title">Filter Ads</h3>
-                        <button class="modal__close-btn" id="close-filter">
+                        <button class="modal__close-btn" id="close-filter" type="button">
                             <svg width="44" height="45" viewBox="0 0 44 45" fill="none"
                                 xmlns="http://www.w3.org/2000/svg">
                                 <path d="M28 16.5L16 28.5M16 16.5L28 28.5" stroke="#667085" stroke-width="2"
@@ -116,6 +118,13 @@
             </div>
         </section>
     </main>
+    <section id="download-modal" class="modal download-modal">
+
+        <div class="modal-content">
+            <span id="closeDownloadModal" class="close">&times;</span>
+            <p id="downloadModal-text">Загрузка началась! <br>Пожалуйста, не покидайте страницу!</p>
+        </div>
+    </section>
     <script src="../static/js/filter.js"></script>
 </body>
 
