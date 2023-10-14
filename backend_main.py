@@ -56,7 +56,6 @@ def add_new_page():
 
 @app.route('/delete_page/<int:account_id>', methods=["POST"])
 def delete_page(account_id):
-    print(account_id)
     db_sess = db_session.create_session()
     account = db_sess.query(Account).filter(Account.acc_id == account_id).first()
     ads = db_sess.query(Advertisements).filter(Advertisements.account_id == account_id).all()
@@ -64,6 +63,8 @@ def delete_page(account_id):
     for ad in ads:
         db_sess.delete(ad)
     db_sess.commit()
+
+    requests.post(f"http://127.0.0.1:8800/delete_job/{account_id}")
     return redirect(f"/index")
 
 
