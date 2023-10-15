@@ -11,6 +11,8 @@ from flask_socketio import SocketIO
 from data import db_session
 from data.accounts import Account
 from data.advertisement import Advertisements
+from data.jobqueue import Job
+
 from io import BytesIO
 import zipfile
 
@@ -65,8 +67,10 @@ def add_new_page():
 def delete_page(account_id):
     db_sess = db_session.create_session()
     account = db_sess.query(Account).filter(Account.acc_id == account_id).first()
+    job = db_sess.query(Job).filter(Job.account_id == account_id).first()
     ads = db_sess.query(Advertisements).filter(Advertisements.account_id == account_id).all()
     db_sess.delete(account)
+    db_sess.delete(job)
     for ad in ads:
         db_sess.delete(ad)
     db_sess.commit()
