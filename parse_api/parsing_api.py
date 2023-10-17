@@ -12,7 +12,7 @@ from parse_api.parse_requests import parse_page
 app = Flask(__name__)
 scheduler = BackgroundScheduler()
 app.config['SECRET_KEY'] = "NikitinPlaxin31524011"
-app.config['BACKEND_IP'] = "http://127.0.0.1:5000"
+app.config['BACKEND_IP'] = "http://159.223.150.42:5000"
 
 
 @app.route('/delete_job/<int:id>', methods=["POST"])
@@ -57,7 +57,7 @@ def restart_all_job():
 def main():
     scheduler.start()
     restart_all_job()
-    app.run(port=8800)
+    app.run(host="159.223.150.42", port=8800)
 
 
 if __name__ == '__main__':
