@@ -11,11 +11,14 @@ from flask_socketio import SocketIO
 from data import db_session
 from data.accounts import Account
 from data.advertisement import Advertisements
+from data.jobqueue import Job
+
 from io import BytesIO
 import zipfile
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "NikitinPlaxin315240"
+app.config['API_IP'] = "http://159.223.150.42:8800"
 socketio = SocketIO(app)
 
 
@@ -51,9 +54,8 @@ def add_new_page():
     media_type = form.get("media")
     db_sess = db_session.create_session()
     acc_id = db_sess.query(Account).filter(Account.acc_id == id).first()
-    print(f"http://127.0.0.1:8800/add_new_account/{id}/{platforms}/{media_type}")
     if acc_id is None:
-        requests.post(f"http://127.0.0.1:8800/add_new_account/{id}/{platforms}/{media_type}")
+        requests.post(f"{app.config.get('API_IP')}/add_new_account/{id}/{platforms}/{media_type}")
         return "", 204
 
     else:
@@ -65,13 +67,15 @@ def add_new_page():
 def delete_page(account_id):
     db_sess = db_session.create_session()
     account = db_sess.query(Account).filter(Account.acc_id == account_id).first()
+    job = db_sess.query(Job).filter(Job.account_id == account_id).first()
     ads = db_sess.query(Advertisements).filter(Advertisements.account_id == account_id).all()
     db_sess.delete(account)
+    db_sess.delete(job)
     for ad in ads:
         db_sess.delete(ad)
     db_sess.commit()
 
-    requests.post(f"http://127.0.0.1:8800/delete_job/{account_id}")
+    requests.post(f"{app.config.get('API_IP')}/delete_job/{account_id}")
     return redirect(f"/index")
 
 
@@ -242,7 +246,7 @@ def refresh():
 def main():
     db_session.global_init("databases/accounts.db")
 
-    socketio.run(app, debug=True)
+    socketio.run(app, host="159.223.150.42", debug=True)
 
 
 if __name__ == '__main__':

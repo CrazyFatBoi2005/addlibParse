@@ -1,5 +1,4 @@
 import time
-
 import requests
 from sqlalchemy.exc import IntegrityError
 from parse_api.classes import *
@@ -9,13 +8,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.edge.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 from data.accounts import Account as ApiAccount
+from data.jobqueue import Job
 from data.advertisement import Advertisements
-
+import datetime
 from data import db_session
 
-
-nike_url = "https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&view_all_page_id" \
-           "=15087023444&search_type=page&media_type=all "
 
 rename_filter = {
     'All Platforms': "",
@@ -30,20 +27,34 @@ rename_filter = {
 
 
 # start
-def parse_page(id: str, platform: str, media: str):
-    url_with_filters = f"https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&view_all_page_id={id}{rename_filter[platform]}&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&search_type=page{rename_filter[media]}"
+def parse_page(id: str, platform=None, media=None, ip=None, url=None):
+    db_session.global_init("../databases/accounts.db")
+    if url is None:
+        url_with_filters = f"https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&view_all_page_id={id}{rename_filter[platform]}&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&search_type=page{rename_filter[media]}"
+        db_sess = db_session.create_session()
+        job = Job()
+        job.account_id = id
+        job.url = url_with_filters
+        time_now = datetime.datetime.now().time()
+        job.time = ":".join([str(time_now.hour), str(time_now.minute), str(time_now.second)])
+        db_sess.add(job)
+        db_sess.commit()
+    else:
+        url_with_filters = url
     # фильтры пользователя в filters
     url = f"https://www.facebook.com/ads/library/?active_status=all" \
           f"&ad_type=all&country=ALL&view_all_page_id={id}" \
           f"&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&search_type=page&media_type=all "
-    print(url_with_filters)
     account = Account(url)
     options = Options()
-    options.add_argument("--headless")
+    # options.add_argument("--headless")
     driver = webdriver.Edge(options=options)
     driver.get(url_with_filters)
-    _ = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//div[@class='_7jvw x2izyaf x1hq5gj4 x1d52u69']")))
-    time.sleep(2)
+    try:
+        _ = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//div[@class='_7jvw x2izyaf x1hq5gj4 x1d52u69']")))
+    except TimeoutError:
+        print("empty account")
+    time.sleep(1)
     account.name = driver.find_element(By.XPATH, "//div[@class='x8t9es0 x1ldc4aq x1xlr1w8 x1cgboj8 x4hq6eo xq9mrsl x1yc453h x1h4wwuj xeuugli']").text
     account.nickname = "@" + driver.find_elements(By.XPATH, "//a[@class='xt0psk2 x1hl2dhg xt0b8zv x8t9es0 x1fvot60 xxio538 xjnfcd9 xq9mrsl x1yc453h x1h4wwuj x1fcty0u']")[-1].get_attribute("href").split("/")[-1]
     account.image = driver.find_element(By.XPATH, "//img[@class='xl1xv1r x78zum5 x193iq5w x1us19tq xkrh0ho x1aqa79q x10btfu9 x1e152vy']").get_attribute("src")
@@ -75,7 +86,6 @@ def parse_page(id: str, platform: str, media: str):
     account.active_ads = account.count_active()
     driver.close()
     print(f"End {account.name}.")
-    db_session.global_init("../databases/accounts.db")
     try:
         db_sess = db_session.create_session()
         api_account = ApiAccount()
@@ -116,5 +126,5 @@ def parse_page(id: str, platform: str, media: str):
             api_ads.account_id = account.id
             db_sess.add(api_ads)
     db_sess.commit()
-    requests.post("http://127.0.0.1:5000/refresh")
+    requests.post(f"{ip}/refresh")
     print(f"Account {account.name} in databese, refresh page")
