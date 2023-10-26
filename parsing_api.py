@@ -1,4 +1,3 @@
-import requests
 from data import db_session
 import multiprocessing as mp
 from flask import Flask, jsonify
@@ -7,12 +6,12 @@ from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
 from data.jobqueue import Job
 
-from parse_api.parse_requests import parse_page
+from parse_requests import parse_page
 
 app = Flask(__name__)
 scheduler = BackgroundScheduler()
 app.config['SECRET_KEY'] = "NikitinPlaxin31524011"
-app.config['BACKEND_IP'] = "http://159.223.150.42:5000"
+app.config['BACKEND_IP'] = "http://178.253.42.233:5000"
 
 
 @app.route('/delete_job/<int:id>', methods=["POST"])
@@ -41,7 +40,7 @@ def update_data(id, platform, media, ip, url):
 
 
 def restart_all_job():
-    db_session.global_init("../databases/accounts.db")
+    db_session.global_init("databases/accounts.db")
     db_sess = db_session.create_session()
     jobs = db_sess.query(Job).all()
     for job in jobs:
@@ -57,7 +56,7 @@ def restart_all_job():
 def main():
     scheduler.start()
     restart_all_job()
-    app.run(host="159.223.150.42", port=8800)
+    app.run(host="178.253.42.233", port=8800)
 
 
 if __name__ == '__main__':

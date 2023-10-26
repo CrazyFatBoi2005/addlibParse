@@ -1,3 +1,4 @@
+import os
 import time
 import requests
 from sqlalchemy.exc import IntegrityError
@@ -5,7 +6,7 @@ from parse_api.classes import *
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-from selenium.webdriver.edge.options import Options
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 from data.accounts import Account as ApiAccount
 from data.jobqueue import Job
@@ -28,7 +29,7 @@ rename_filter = {
 
 # start
 def parse_page(id: str, platform=None, media=None, ip=None, url=None):
-    db_session.global_init("../databases/accounts.db")
+    db_session.global_init("databases/accounts.db")
     if url is None:
         url_with_filters = f"https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&view_all_page_id={id}{rename_filter[platform]}&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&search_type=page{rename_filter[media]}"
         db_sess = db_session.create_session()
@@ -47,9 +48,13 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
           f"&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&search_type=page&media_type=all "
     account = Account(url)
     options = Options()
-    # options.add_argument("--headless")
-    driver = webdriver.Edge(options=options)
+    options.add_argument("--headless")
+    profile_directory = r'%AppData%\Mozilla\Firefox\Profiles\42ryon9o.adParseProf'
+    profile = webdriver.FirefoxProfile(os.path.expandvars(profile_directory))
+    options.profile = profile
+    driver = webdriver.Firefox(options=options)
     driver.get(url_with_filters)
+
     try:
         _ = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//div[@class='_7jvw x2izyaf x1hq5gj4 x1d52u69']")))
     except TimeoutError:
