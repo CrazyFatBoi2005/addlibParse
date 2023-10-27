@@ -242,6 +242,33 @@ def download_media():
     )
 
 
+@app.route('/download_certain_media', methods=["POST"])
+def download_certain_media():
+    image_id = request.args.get("image_id")
+    db_sess = db_session.create_session()
+    image_download_link, image_media_type = \
+        db_sess.query(Advertisements.ad_downloadLink,
+                      Advertisements.ad_mediaType).filter(Advertisements.ad_id_another == image_id)[0]
+
+    response = requests.get(image_download_link)
+
+    if response.status_code == 200:
+        image_data = response.content
+        if image_media_type == "Image":
+            return send_file(
+                BytesIO(image_data),
+                mimetype='image/jpeg',
+                as_attachment=True,
+                download_name=f'{image_id}.jpg'
+            )
+        return send_file(
+            BytesIO(image_data),
+            mimetype='video/mp4',
+            as_attachment=True,
+            download_name=f'{image_id}.mp4'
+        )
+
+
 @app.route('/refresh', methods=["POST"])
 def refresh():
     socketio.emit('data_updated', "OK:200")
@@ -251,7 +278,7 @@ def refresh():
 def main():
     db_session.global_init("databases/accounts.db")
 
-    socketio.run(app, host="178.253.42.233", debug=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':

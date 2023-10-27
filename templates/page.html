@@ -58,8 +58,10 @@
                         <p class="text-st">{{ad.ad_text}}</p>
                         <p class="cta-st no-margins">{{ad.ad_buttonStatus}}</p>
                         <p class="days-active-st no-margins">{{ad.ad_daysActive}}</p>
-
-                        <a href="{{ad.ad_downloadLink}}" class="file-st no-margins" download>Download File</a>
+                        <form method="post" action="{{ url_for('download_certain_media', image_id=ad.ad_id_another)}}"
+                        class="download-certain-media-form">
+                            <button class="file-st no-margins download-certain-media-btn">Download File</button>
+                        </form>
                         <a href="{{ad.ad_landingLink}}" class="landing-st no-margins">Landing</a>
                     </li>
                     {% endfor %}
