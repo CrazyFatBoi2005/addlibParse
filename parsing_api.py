@@ -4,6 +4,7 @@ from flask import Flask, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.jobstores.base import ConflictingIdError
 from data.jobqueue import Job
 
 from parse_requests import parse_page
@@ -46,11 +47,14 @@ def restart_all_job():
     for job in jobs:
         time_split = job.time.split(":")
         trigger = CronTrigger(year="*", month="*", day="*", hour=time_split[0], minute=time_split[1], second=time_split[2])
-        scheduler.add_job(func=update_data, kwargs={"id": job.account_id,
-                                                    "url": job.url,
-                                                    "ip": app.config.get('BACKEND_IP'),
-                                                    "platform": None,
-                                                    "media": None}, id=str(id), trigger=trigger)
+        try:
+            scheduler.add_job(func=update_data, kwargs={"id": job.account_id,
+                                                        "url": job.url,
+                                                        "ip": app.config.get('BACKEND_IP'),
+                                                        "platform": None,
+                                                        "media": None}, id=str(job.account_id), trigger=trigger)
+        except ConflictingIdError:
+            scheduler.resume_job(str(job.account_id))
 
 
 def main():
