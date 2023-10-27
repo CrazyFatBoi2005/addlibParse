@@ -462,6 +462,7 @@ body {
 .landing-st {
     width: 90px;
     margin: auto 0;
+    color: #6941C6;
 
 }
 
@@ -579,4 +580,17 @@ download-modal {
 
 .red-color-modal {
     border: 3px red dashed;
+}
+
+.download-certain-media-form {
+display: flex;
+}
+
+.download-certain-media-btn {
+    background: none;
+    border: none;
+    text-decoration: underline;
+    color: #6941C6;
+    font-size: 14px;
+    cursor: pointer;
 }

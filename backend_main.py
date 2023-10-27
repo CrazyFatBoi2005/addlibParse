@@ -18,7 +18,7 @@ import zipfile
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "NikitinPlaxin315240"
-app.config['API_IP'] = "http://159.223.150.42:8800"
+app.config['API_IP'] = "http://178.253.42.233:8800"
 socketio = SocketIO(app)
 
 
@@ -49,7 +49,11 @@ def add_new_page():
     form = request.form
     url = form.get("account-link")
     url = url.strip()
-    id = url[url.find("view_all_page_id=") + len("view_all_page_id="):url.find("&sort_data")]
+
+    id = url[url.find("view_all_page_id=") + len("view_all_page_id="):url.find("&search_type")]
+    if not id.isdigit():
+        id = url[url.find("view_all_page_id=") + len("view_all_page_id="):url.find("&sort_data")]
+    print(id)
     platforms = form.get("platform")
     media_type = form.get("media")
     db_sess = db_session.create_session()
@@ -214,15 +218,16 @@ def download_media():
     account_id = request.args.get("account_id")
     db_sess = db_session.create_session()
     acc_name = db_sess.query(Account.account_name).filter(Account.acc_id == account_id)[0][0]
-    download_links = db_sess.query(Advertisements.ad_downloadLink, Advertisements.ad_id_another)\
+    download_links = db_sess.query(Advertisements.ad_downloadLink, Advertisements.ad_id_another, Advertisements.ad_mediaType)\
         .filter(Advertisements.account_id == account_id).all()
+
     zip_buffer = BytesIO()
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for image_url, ad_id_another in download_links:
+        for image_url, ad_id_another, media_type in download_links:
             response = requests.get(image_url)
             if response.status_code == 200:
                 image_data = response.content
-                if "video" in image_url:
+                if "Video" in media_type:
                     zipf.writestr(f'video_{ad_id_another}.mp4', image_data)
                 else:
                     zipf.writestr(f'image_{ad_id_another}.jpg', image_data)
@@ -237,6 +242,33 @@ def download_media():
     )
 
 
+@app.route('/download_certain_media', methods=["POST"])
+def download_certain_media():
+    image_id = request.args.get("image_id")
+    db_sess = db_session.create_session()
+    image_download_link, image_media_type = \
+        db_sess.query(Advertisements.ad_downloadLink,
+                      Advertisements.ad_mediaType).filter(Advertisements.ad_id_another == image_id)[0]
+
+    response = requests.get(image_download_link)
+
+    if response.status_code == 200:
+        image_data = response.content
+        if image_media_type == "Image":
+            return send_file(
+                BytesIO(image_data),
+                mimetype='image/jpeg',
+                as_attachment=True,
+                download_name=f'{image_id}.jpg'
+            )
+        return send_file(
+            BytesIO(image_data),
+            mimetype='video/mp4',
+            as_attachment=True,
+            download_name=f'{image_id}.mp4'
+        )
+
+
 @app.route('/refresh', methods=["POST"])
 def refresh():
     socketio.emit('data_updated', "OK:200")
@@ -246,7 +278,7 @@ def refresh():
 def main():
     db_session.global_init("databases/accounts.db")
 
-    socketio.run(app, host="159.223.150.42", debug=True)
+    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':
