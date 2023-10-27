@@ -27,7 +27,7 @@ closeModalNotif.addEventListener('click', () => {
 });
 
 
-var socket = io.connect('http://127.0.0.1:5000');
+var socket = io.connect('http://178.253.42.233:5000');
 
 socket.on('data_updated', function(data) {
     // Обновите страницу с новыми данными
