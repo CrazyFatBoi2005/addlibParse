@@ -7,7 +7,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
 from data.jobqueue import Job
 
-from parse_api.parse_requests import parse_page
+from parse_requests import parse_page
 
 app = Flask(__name__)
 scheduler = BackgroundScheduler()
