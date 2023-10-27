@@ -18,7 +18,7 @@ import zipfile
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "NikitinPlaxin315240"
-app.config['API_IP'] = "http://159.223.150.42:8800"
+app.config['API_IP'] = "http://127.0.0.1:8800"
 socketio = SocketIO(app)
 
 
@@ -246,7 +246,7 @@ def refresh():
 def main():
     db_session.global_init("databases/accounts.db")
 
-    socketio.run(app, host="159.223.150.42", debug=True)
+    socketio.run(app, host="127.0.0.1", debug=True)
 
 
 if __name__ == '__main__':
