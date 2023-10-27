@@ -31,3 +31,11 @@ closeDownloadModal.addEventListener('click', () => {
     downloadModal.classList.remove("show");
 });
 
+var socket = io.connect('http://127.0.0.1:5000');
+
+socket.on('media_is_ready', function(data) {
+    location.reload()
+
+    console.log('Данные обновлены:', data);
+});
+

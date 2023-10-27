@@ -7,6 +7,7 @@
     <link href="../static/css/style.css" rel="stylesheet">
     <meta charset="utf-8">
     <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.3/socket.io.js"></script>
 </head>
 
 <body>
@@ -24,13 +25,19 @@
                     <div class="page-btns">
                         <button class="filter-btn" id="open-filter">Filter Ads</button>
                         <form method="post" action="{{ url_for('download_media', account_id=account_id)}}" id="download-media-form">
-                            <button class="download-media-btn">Download Media</button>
+                            <button class="download-media-btn">Install Media</button>
                         </form>
-
                         <form  method="post" action="{{ url_for('download_csv', account_id=account_id, return_status=return_status)}}">
                             <button class="download-csv-btn">Download CSV</button>
                         </form>
                     </div>
+                </div>
+                <div style="display: flex;
+                            justify-content: end;">
+                        <form method="post" action="{{ url_for('download_media', account_id=account_id)}}">
+                            <button class="download-media-btn" style="width: 273px;
+                                                                text-align: center;" disabled>Download Media</button>
+                        </form>
                 </div>
             </section>
             <section class="ads-content__content">
