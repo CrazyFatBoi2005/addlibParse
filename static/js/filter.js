@@ -12,30 +12,59 @@ closeFilterBtn.addEventListener('click', () => {
 
 var downloadModal = document.getElementById("download-modal");
 var closeDownloadModal = document.getElementById("closeDownloadModal");
-var downloadForm = document.getElementById("download-media-form");
+var installForm = document.getElementById("install-media-form");
+var installBtn = document.getElementById("install-media-btn");
 
-downloadForm.addEventListener("submit", function(event) {
-        downloadModal.classList.add("show");
-        setTimeout(function() {
-        downloadModal.classList.remove("show");
-        downloadModal.classList.add("remove");
-        }, 15000);
-        setTimeout(function() {
-            downloadModal.style.display = "none";
-            modal.classList.remove("remove");
-        }, 17000);
-
-});
-
-closeDownloadModal.addEventListener('click', () => {
-    downloadModal.classList.remove("show");
-});
 
 var socket = io.connect('http://127.0.0.1:5000');
+var pageId = window.location.pathname.split('/')[2];
+var key = 'buttonState_' + pageId;
+var downloadMediaBtn = document.getElementById("download-media-btn");
 
-socket.on('media_is_ready', function(data) {
-    location.reload()
+function enableButton() {
+  downloadMediaBtn.disabled = false;
+  localStorage.setItem(key, "btnEnabled");
 
+}
+
+function disableButton() {
+  downloadMediaBtn.disabled = true;
+  localStorage.setItem(key, "btnDisabled");
+}
+
+
+window.addEventListener("load", function() {
+  var buttonState = localStorage.getItem(key);
+
+  if (buttonState === "btnEnabled") {
+    enableButton();
+  } else {
+    disableButton();
+  }
+});
+
+socket.on('disable_btn', function(data) {
+    disableButton();
+});
+
+
+var textLoading = document.getElementById("loading-text");
+installBtn.addEventListener('click', () => {
+  var dots = 1; // Начальное количество точек
+
+  function updateText() {
+    textLoading.textContent = "Loading" + ".".repeat(dots);
+
+    dots = (dots % 3) + 1;
+  }
+
+  var intervalId = setInterval(updateText, 500);
+
+  socket.on('media_is_ready', function(data) {
+    enableButton();
+    clearInterval(intervalId);
+    textLoading.textContent = "Ready!"
     console.log('Данные обновлены:', data);
 });
 
+});

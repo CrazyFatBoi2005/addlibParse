@@ -18,7 +18,7 @@ form.addEventListener("submit", function(event) {
         modal1.classList.add("show");
         var modal1P = document.getElementById('modal-text')
         modal1.classList.remove("red-color-modal")
-        modal1P.textContent = "Аккаунт скоро будет добавлен"
+        modal1P.textContent = "Account will be added soon!"
 
 });
 
@@ -39,5 +39,5 @@ socket.on('show_modal', function(data) {
     // Обновите страницу с новыми данными
     var modal1P = document.getElementById('modal-text')
     modal1.classList.add("red-color-modal")
-    modal1P.textContent = "Аккаунт уже отслеживается!"
+    modal1P.textContent = "The account is already being tracked!"
 });

@@ -215,19 +215,33 @@ def download_csv():
     return response
 
 
-def my_callback_function(resp, *args, **kwargs):
-    socketio.emit('media_is_ready', "OK:200")
-    return "OK", 200
+# def my_callback_function(resp, *args, **kwargs):
+#     print(123, 123, 123, "\n")
+#     socketio.emit('media_is_ready', "OK:200")
+#     return "OK", 200
+
+
+@app.route('/install_media', methods=["POST"])
+def install_media():
+    account_id = request.args.get("account_id")
+    print(f"{app.config.get('API_IP')}")
+    future = session_.get(f"{app.config.get('API_IP')}/install_media/{account_id}")
+
+    return "", 204
 
 
 @app.route('/download_media', methods=["POST"])
 def download_media():
-    account_id = request.args.get("account_id")
-    print(f"{app.config.get('API_IP')}")
-    future = session_.get(f"{app.config.get('API_IP')}/download_media/{account_id}",
-                          hooks={'response': my_callback_function})
+    account_name = request.args.get("account_name") + "_media"
+    socketio.emit('disable_btn', "")
 
-    return redirect(f"/ads/{account_id}")
+    return send_file(f"media_zips/{account_name}.zip", mimetype="application/zip")
+
+
+@app.route('/refresh_media/<int:account_id>', methods=["POST"])
+def refresh_media(account_id):
+    socketio.emit('media_is_ready', account_id)
+    return "OK", 200
 
 
 @app.route('/download_certain_media', methods=["POST"])

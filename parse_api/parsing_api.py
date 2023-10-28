@@ -31,27 +31,34 @@ def delete_job(id):
     return response
 
 
-@app.route('/download_media/<int:account_id>', methods=["POST", "GET"])
-def download_media(account_id):
+@app.route('/install_media/<int:account_id>', methods=["POST", "GET"])
+def install_media(account_id):
+    print("It's started")
     db_sess = db_session.create_session()
     acc_name = db_sess.query(Account.account_name).filter(Account.acc_id == account_id)[0][0]
     download_links = db_sess.query(Advertisements.ad_downloadLink, Advertisements.ad_id_another,
                                    Advertisements.ad_mediaType) \
         .filter(Advertisements.account_id == account_id).all()
 
-    with zipfile.ZipFile("../media_zips/media_zip.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
+    with zipfile.ZipFile(f"../media_zips/{acc_name}_media.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
         for image_url, ad_id_another, media_type in download_links:
-            response = requests.get(image_url)
-            if response.status_code == 200:
-                image_data = response.content
-                if "Video" in media_type:
-                    zipf.writestr(f'video_{ad_id_another}.mp4', image_data)
-                else:
-                    zipf.writestr(f'image_{ad_id_another}.jpg', image_data)
-    return "OK"
-
-
-
+            try:
+                # proxies = {
+                #     'http': f'http://aAnD9etY:5iYLwNwe@46.3.24.210:64358',
+                #     'https': f'http://aAnD9etY:5iYLwNwe@46.3.24.210:64358',
+                # }
+                response = requests.get(image_url)
+                if response.status_code == 200:
+                    image_data = response.content
+                    if "Video" in media_type:
+                        zipf.writestr(f'video_{ad_id_another}.mp4', image_data)
+                    else:
+                        zipf.writestr(f'image_{ad_id_another}.jpg', image_data)
+            except requests.exceptions.MissingSchema:
+                continue
+    print("It's done!")
+    requests.post(f"{app.config.get('BACKEND_IP')}/refresh_media/{account_id}")
+    return "200"
 
 
 @app.route('/add_new_account/<int:id>/<string:platform>/<string:media>', methods=["POST"])

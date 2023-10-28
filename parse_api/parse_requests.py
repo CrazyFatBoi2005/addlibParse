@@ -49,9 +49,9 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
     account = Account(url)
     options = Options()
     options.add_argument("--headless")
-    profile_directory = r'%AppData%\Mozilla\Firefox\Profiles\42ryon9o.adParseProf'
-    profile = webdriver.FirefoxProfile(os.path.expandvars(profile_directory))
-    options.profile = profile
+    # profile_directory = r'%AppData%\Mozilla\Firefox\Profiles\42ryon9o.adParseProf'
+    # profile = webdriver.FirefoxProfile(os.path.expandvars(profile_directory))
+    # options.profile = profile
     driver = webdriver.Firefox(options=options)
     driver.get(url_with_filters)
 
@@ -132,4 +132,4 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
             db_sess.add(api_ads)
     db_sess.commit()
     requests.post(f"{ip}/refresh")
-    print(f"Account {account.name} in databese, refresh page")
+    print(f"Account {account.name} in database, refresh page")
