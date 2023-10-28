@@ -15,10 +15,12 @@ from data.jobqueue import Job
 
 from io import BytesIO
 import zipfile
+from requests_futures.sessions import FuturesSession
 
 app = Flask(__name__)
+session_ = FuturesSession()
 app.config['SECRET_KEY'] = "NikitinPlaxin315240"
-app.config['API_IP'] = "http://178.253.42.233:8800"
+app.config['API_IP'] = "http://127.0.0.1:8800"
 socketio = SocketIO(app)
 
 
@@ -213,33 +215,33 @@ def download_csv():
     return response
 
 
+# def my_callback_function(resp, *args, **kwargs):
+#     print(123, 123, 123, "\n")
+#     socketio.emit('media_is_ready', "OK:200")
+#     return "OK", 200
+
+
+@app.route('/install_media', methods=["POST"])
+def install_media():
+    account_id = request.args.get("account_id")
+    print(f"{app.config.get('API_IP')}")
+    future = session_.get(f"{app.config.get('API_IP')}/install_media/{account_id}")
+
+    return "", 204
+
+
 @app.route('/download_media', methods=["POST"])
 def download_media():
-    account_id = request.args.get("account_id")
-    db_sess = db_session.create_session()
-    acc_name = db_sess.query(Account.account_name).filter(Account.acc_id == account_id)[0][0]
-    download_links = db_sess.query(Advertisements.ad_downloadLink, Advertisements.ad_id_another, Advertisements.ad_mediaType)\
-        .filter(Advertisements.account_id == account_id).all()
+    account_name = request.args.get("account_name") + "_media"
+    socketio.emit('disable_btn', "")
 
-    zip_buffer = BytesIO()
-    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for image_url, ad_id_another, media_type in download_links:
-            response = requests.get(image_url)
-            if response.status_code == 200:
-                image_data = response.content
-                if "Video" in media_type:
-                    zipf.writestr(f'video_{ad_id_another}.mp4', image_data)
-                else:
-                    zipf.writestr(f'image_{ad_id_another}.jpg', image_data)
+    return send_file(f"media_zips/{account_name}.zip", mimetype="application/zip")
 
-    zip_buffer.seek(0)
 
-    return send_file(
-        zip_buffer,
-        mimetype='application/zip',
-        as_attachment=True,
-        download_name=f'{acc_name}.zip'
-    )
+@app.route('/refresh_media/<int:account_id>', methods=["POST"])
+def refresh_media(account_id):
+    socketio.emit('media_is_ready', account_id)
+    return "OK", 200
 
 
 @app.route('/download_certain_media', methods=["POST"])

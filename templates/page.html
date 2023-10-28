@@ -7,6 +7,7 @@
     <link href="../static/css/style.css" rel="stylesheet">
     <meta charset="utf-8">
     <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.3/socket.io.js"></script>
 </head>
 
 <body>
@@ -23,14 +24,22 @@
                     </div>
                     <div class="page-btns">
                         <button class="filter-btn" id="open-filter">Filter Ads</button>
-                        <form method="post" action="{{ url_for('download_media', account_id=account_id)}}" id="download-media-form">
-                            <button class="download-media-btn">Download Media</button>
+                        <form method="post" action="{{ url_for('install_media', account_id=account_id)}}" id="install-media-form">
+                            <button class="install-media-btn" id="install-media-btn">Install Media</button>
                         </form>
-
                         <form  method="post" action="{{ url_for('download_csv', account_id=account_id, return_status=return_status)}}">
                             <button class="download-csv-btn">Download CSV</button>
                         </form>
                     </div>
+                </div>
+                <div class="download-media-form__wrapper">
+                        <form method="post" class="download-media-form" action="{{ url_for('download_media', account_name=account_name)}}">
+                            <button class="download-media-btn" id="download-media-btn" disabled>Download Media</button>
+                        </form>
+                    <div class="loading-text__wrapper">
+                        <p class="loading-text" id="loading-text"></p>
+                    </div>
+
                 </div>
             </section>
             <section class="ads-content__content">
@@ -124,7 +133,7 @@
 
         <div class="modal-content">
             <span id="closeDownloadModal" class="close">&times;</span>
-            <p id="downloadModal-text">Загрузка началась! <br>Пожалуйста, не покидайте страницу!</p>
+            <p id="downloadModal-text">The download has started! <br>This may take some time.</p>
         </div>
     </section>
     <script src="../static/js/filter.js"></script>
