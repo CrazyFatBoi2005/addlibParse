@@ -2,6 +2,7 @@ import asyncio
 import csv
 import datetime
 import io
+import os
 
 import requests
 import socketio
@@ -39,7 +40,6 @@ def ads(account_id):
     db_sess = db_session.create_session()
     ads = db_sess.query(Advertisements).filter(Advertisements.account_id == account_id).all()
     account_name = db_sess.query(Account.account_name).filter(Account.acc_id == account_id).first()[0]
-
     ads_count = len(ads)
     cur_date = str(datetime.date.today())
     return render_template("page.html", ads=ads, ads_count=ads_count, cur_date=cur_date, account_id=account_id,

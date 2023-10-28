@@ -68,3 +68,5 @@ installBtn.addEventListener('click', () => {
 });
 
 });
+
+console.log(localStorage.getItem(key));
