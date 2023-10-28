@@ -121,6 +121,12 @@ def status4_filtration(db_sess, account_id, over_days, platforms, media_type):
     return ads, return_status
 
 
+def text_filter(text, ad_text):
+    if text.strip().lower() in ad_text.lower():
+        return True
+    return False
+
+
 @app.route('/filter_ads', methods=["POST"])
 def filter_ads():
     return_status = 0
@@ -143,11 +149,14 @@ def filter_ads():
     filtered_ads = []
     for ad in ads:
         if datetime.datetime.strptime(start_date, '%Y-%m-%d').date() != datetime.date.today():
-            if datetime.datetime.strptime(ad.ad_date, '%Y-%m-%d').date() >= datetime.datetime.strptime(start_date,
-                                                                                                       '%Y-%m-%d').date():
-                filtered_ads.append(ad)
+            if datetime.datetime.strptime(ad.ad_date,
+                                          '%Y-%m-%d').date() >= datetime.datetime.strptime(start_date,
+                                                                                           '%Y-%m-%d').date():
+                if text_filter(text, ad.ad_text):
+                    filtered_ads.append(ad)
         else:
-            filtered_ads.append(ad)
+            if text_filter(text, ad.ad_text):
+                filtered_ads.append(ad)
     session["request_data"] = request_data
     ads_count = len(filtered_ads)
 
