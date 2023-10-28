@@ -142,8 +142,11 @@ def filter_ads():
         ads, return_status = status4_filtration(db_sess, account_id, over_days, platforms, media_type)
     filtered_ads = []
     for ad in ads:
-        if datetime.datetime.strptime(ad.ad_date, '%Y-%m-%d').date() >= datetime.datetime.strptime(start_date,
-                                                                                                   '%Y-%m-%d').date():
+        if datetime.datetime.strptime(start_date, '%Y-%m-%d').date() != datetime.date.today():
+            if datetime.datetime.strptime(ad.ad_date, '%Y-%m-%d').date() >= datetime.datetime.strptime(start_date,
+                                                                                                       '%Y-%m-%d').date():
+                filtered_ads.append(ad)
+        else:
             filtered_ads.append(ad)
     session["request_data"] = request_data
     ads_count = len(filtered_ads)
