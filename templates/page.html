@@ -57,7 +57,10 @@
                     <li class="ads-content__content-item">
                         <div class="ads-content-item-describer">
                             <div class="box">
-                                    <img src="{{ad.ad_image}}" alt="">
+                                <img src="{{ad.ad_image}}" alt="">
+                                {% if ad.ad_mediaType == "Video" %}
+                                <img class="video_player_image" src="https://www.pngarts.com/files/2/Play-Button-PNG-Picture.png" alt="" style="opacity: 0.75">
+                                {% endif %}
                             </div>
                             <div class="ads-user-naming__wrapper">
                                 <h4 class="ads-num no-margins">{{ad.ad_id_another}}</h4>
