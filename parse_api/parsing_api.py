@@ -5,6 +5,7 @@ import zipfile
 from io import BytesIO
 
 import requests
+from apscheduler.jobstores.base import ConflictingIdError
 
 from data import db_session
 import multiprocessing as mp
@@ -47,10 +48,6 @@ def install_media(account_id):
     with zipfile.ZipFile(f"../temporary_zips/{acc_name}_media.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
         for image_url, ad_id_another, media_type in download_links:
             try:
-                # proxies = {
-                #     'http': f'http://aAnD9etY:5iYLwNwe@46.3.24.210:64358',
-                #     'https': f'http://aAnD9etY:5iYLwNwe@46.3.24.210:64358',
-                # }
                 response = requests.get(image_url)
                 if response.status_code == 200:
                     image_data = response.content
@@ -93,24 +90,27 @@ def update_data(id, platform, media, ip, url):
     process.start()
 
 
-# def restart_all_job():
-#     db_session.global_init("../databases/accounts.db")
-#     db_sess = db_session.create_session()
-#     jobs = db_sess.query(Job).all()
-#     for job in jobs:
-#         time_split = job.time.split(":")
-#         trigger = CronTrigger(year="*", month="*", day="*", hour=time_split[0], minute=time_split[1], second=time_split[2])
-#         scheduler.add_job(func=update_data, kwargs={"id": job.account_id,
-#                                                     "url": job.url,
-#                                                     "ip": app.config.get('BACKEND_IP'),
-#                                                     "platform": None,
-#                                                     "media": None}, id=str(id), trigger=trigger)
+def restart_all_job():
+    db_session.global_init("databases/accounts.db")
+    db_sess = db_session.create_session()
+    jobs = db_sess.query(Job).all()
+    for job in jobs:
+        time_split = job.time.split(":")
+        trigger = CronTrigger(year="*", month="*", day="*", hour=time_split[0], minute=time_split[1], second=time_split[2])
+        try:
+            scheduler.add_job(func=update_data, kwargs={"id": job.account_id,
+                                                        "url": job.url,
+                                                        "ip": app.config.get('BACKEND_IP'),
+                                                        "platform": None,
+                                                        "media": None}, id=str(job.account_id), trigger=trigger)
+        except ConflictingIdError:
+            scheduler.resume_job(str(job.account_id))
 
 
 def main():
-    scheduler.start()
-    # restart_all_job()
     db_session.global_init("../databases/accounts.db")
+    scheduler.start()
+    restart_all_job()
     app.run(host="127.0.0.1", port=8800, debug=True)
 
 
