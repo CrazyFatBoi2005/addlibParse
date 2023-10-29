@@ -2,6 +2,7 @@ import asyncio
 import csv
 import datetime
 import io
+import os
 
 import requests
 import socketio
@@ -15,10 +16,12 @@ from data.jobqueue import Job
 
 from io import BytesIO
 import zipfile
+from requests_futures.sessions import FuturesSession
 
 app = Flask(__name__)
+session_ = FuturesSession()
 app.config['SECRET_KEY'] = "NikitinPlaxin315240"
-app.config['API_IP'] = "http://178.253.42.233:8800"
+app.config['API_IP'] = "http://127.0.0.1:8800"
 socketio = SocketIO(app)
 
 
@@ -37,7 +40,6 @@ def ads(account_id):
     db_sess = db_session.create_session()
     ads = db_sess.query(Advertisements).filter(Advertisements.account_id == account_id).all()
     account_name = db_sess.query(Account.account_name).filter(Account.acc_id == account_id).first()[0]
-
     ads_count = len(ads)
     cur_date = str(datetime.date.today())
     return render_template("page.html", ads=ads, ads_count=ads_count, cur_date=cur_date, account_id=account_id,
@@ -119,6 +121,12 @@ def status4_filtration(db_sess, account_id, over_days, platforms, media_type):
     return ads, return_status
 
 
+def text_filter(text, ad_text):
+    if text.strip().lower() in ad_text.lower():
+        return True
+    return False
+
+
 @app.route('/filter_ads', methods=["POST"])
 def filter_ads():
     return_status = 0
@@ -140,9 +148,15 @@ def filter_ads():
         ads, return_status = status4_filtration(db_sess, account_id, over_days, platforms, media_type)
     filtered_ads = []
     for ad in ads:
-        if datetime.datetime.strptime(ad.ad_date, '%Y-%m-%d').date() >= datetime.datetime.strptime(start_date,
-                                                                                                   '%Y-%m-%d').date():
-            filtered_ads.append(ad)
+        if datetime.datetime.strptime(start_date, '%Y-%m-%d').date() != datetime.date.today():
+            if datetime.datetime.strptime(ad.ad_date,
+                                          '%Y-%m-%d').date() >= datetime.datetime.strptime(start_date,
+                                                                                           '%Y-%m-%d').date():
+                if text_filter(text, ad.ad_text):
+                    filtered_ads.append(ad)
+        else:
+            if text_filter(text, ad.ad_text):
+                filtered_ads.append(ad)
     session["request_data"] = request_data
     ads_count = len(filtered_ads)
 
@@ -213,33 +227,60 @@ def download_csv():
     return response
 
 
+# def my_callback_function(resp, *args, **kwargs):
+#     print(123, 123, 123, "\n")
+#     socketio.emit('media_is_ready', "OK:200")
+#     return "OK", 200
+
+
+@app.route('/install_media', methods=["POST"])
+def install_media():
+    account_id = request.args.get("account_id")
+    print(f"{app.config.get('API_IP')}")
+    future = session_.get(f"{app.config.get('API_IP')}/install_media/{account_id}")
+
+    return "", 204
+
+
 @app.route('/download_media', methods=["POST"])
 def download_media():
-    account_id = request.args.get("account_id")
+    account_name = request.args.get("account_name") + "_media"
+    socketio.emit('disable_btn', "")
+
+    return send_file(f"media_zips/{account_name}.zip", mimetype="application/zip")
+
+
+@app.route('/refresh_media/<int:account_id>', methods=["POST"])
+def refresh_media(account_id):
+    socketio.emit('media_is_ready', account_id)
+    return "OK", 200
+
+
+@app.route('/download_certain_media', methods=["POST"])
+def download_certain_media():
+    image_id = request.args.get("image_id")
     db_sess = db_session.create_session()
-    acc_name = db_sess.query(Account.account_name).filter(Account.acc_id == account_id)[0][0]
-    download_links = db_sess.query(Advertisements.ad_downloadLink, Advertisements.ad_id_another, Advertisements.ad_mediaType)\
-        .filter(Advertisements.account_id == account_id).all()
+    image_download_link, image_media_type = \
+        db_sess.query(Advertisements.ad_downloadLink,
+                      Advertisements.ad_mediaType).filter(Advertisements.ad_id_another == image_id)[0]
 
-    zip_buffer = BytesIO()
-    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for image_url, ad_id_another, media_type in download_links:
-            response = requests.get(image_url)
-            if response.status_code == 200:
-                image_data = response.content
-                if "Video" in media_type:
-                    zipf.writestr(f'video_{ad_id_another}.mp4', image_data)
-                else:
-                    zipf.writestr(f'image_{ad_id_another}.jpg', image_data)
+    response = requests.get(image_download_link)
 
-    zip_buffer.seek(0)
-
-    return send_file(
-        zip_buffer,
-        mimetype='application/zip',
-        as_attachment=True,
-        download_name=f'{acc_name}.zip'
-    )
+    if response.status_code == 200:
+        image_data = response.content
+        if image_media_type == "Image":
+            return send_file(
+                BytesIO(image_data),
+                mimetype='image/jpeg',
+                as_attachment=True,
+                download_name=f'{image_id}.jpg'
+            )
+        return send_file(
+            BytesIO(image_data),
+            mimetype='video/mp4',
+            as_attachment=True,
+            download_name=f'{image_id}.mp4'
+        )
 
 
 @app.route('/refresh', methods=["POST"])
@@ -251,7 +292,7 @@ def refresh():
 def main():
     db_session.global_init("databases/accounts.db")
 
-    socketio.run(app, host="178.253.42.233", debug=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':

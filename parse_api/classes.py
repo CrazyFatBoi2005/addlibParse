@@ -24,6 +24,21 @@ dates = {
     "дек": 12
 }
 
+dates_eng = {
+    "Jan": 1,
+    "Feb": 2,
+    "Mar": 3,
+    "Apr": 4,
+    "May": 5,
+    "Jun": 6,
+    "Jul": 7,
+    "Aug": 8,
+    "Sep": 9,
+    "Oct": 10,
+    "Nov": 11,
+    "Dec": 12
+}
+
 
 class Ad:
     def __init__(self, element):
@@ -82,30 +97,43 @@ class Ad:
                     self.download = ""
                     self.image = self.download
                     self.media_type = "Video"
-
-
+        """
         try:
             self.status = soup.find("span", class_="x8t9es0 xw23nyj xo1l8bm x63nzvj x108nfp6 xq9mrsl x1h4wwuj xeuugli "
                                                    "x1i64zmx").get_text()
         except:
             self.status = soup.find("span",
                                     class_="x8t9es0 xw23nyj xo1l8bm x63nzvj x108nfp6 xq9mrsl x1h4wwuj xeuugli x1i64zmx").get_text()
-
+        """
         date = soup.find_all("span", class_="x8t9es0 xw23nyj xo1l8bm x63nzvj x108nfp6 xq9mrsl x1h4wwuj"
                                             " xeuugli")[1].get_text().split(' ')
+        # date parse
         try:
-            day, month, year = int(date[2]), dates[date[3]], int(date[4])
+            try:
+                day, month, year = int(date[2]), dates[date[3]], int(date[4])
+            except:
+                day, month, year = int(date[4][:-1]), dates_eng[date[3]], int(date[5])
             self.start_date = datetime.date(year, month, day)
-
             self.duration = str((datetime.date.today() - self.start_date).days)
             self.start_date = str(self.start_date)
+            self.status = "Активно"
         except:
-            day, month, year = int(date[1]), dates[date[2]], int(date[3])
-            self.start_date = datetime.date(year, month, day)
-            day, month, year = int(date[6]), dates[date[7]], int(date[8])
-            end_date = datetime.date(year, month, day)
+            try:
+                day, month, year = int(date[1]), dates[date[2]], int(date[3])
+                self.start_date = datetime.date(year, month, day)
+
+                day, month, year = int(date[6]), dates[date[7]], int(date[8])
+                end_date = datetime.date(year, month, day)
+            except:
+                day, month, year = int(date[1][:-1]), dates_eng[date[0]], int(date[2])
+                self.start_date = datetime.date(year, month, day)
+
+                day, month, year = int(date[5][:-1]), dates_eng[date[4]], int(date[6])
+                end_date = datetime.date(year, month, day)
+
             self.duration = str((end_date - self.start_date).days)
             self.start_date = str(self.start_date)
+            self.status = "Не активно"
         self.platforms = []
         for platform in soup.find_all("div", class_="xtwfq29"):
             if platform['style'] in platform_styles.keys():

@@ -47,7 +47,7 @@
                         <p class="channel-total-ads no-margins">{{item.account_totalAds}}</p>
                         <p class="channel-active-ads no-margins">{{item.account_activeAds}}</p>
                         <div class="channel-link-div">
-                            <a href="{{item.adlib_account_link}}" class="channel-link no-margins">Facebook Ads</a>
+                            <a href="{{item.adlib_account_link}}" target="_blank" class="channel-link no-margins">Facebook Ads</a>
                         </div>
                         <div class="management-links">
                             <form action="/delete_page/{{item.acc_id}}" method="post" class="delete-channel no-margins">
@@ -127,7 +127,7 @@
 
         <div class="modal-content">
             <span id="closeModal" class="close">&times;</span>
-            <p id="modal-text">Канал скоро будет добавлен!</p>
+            <p id="modal-text">Account will be added soon!</p>
         </div>
     </section>
     <script src="../static/js/script.js"></script>

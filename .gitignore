@@ -160,4 +160,4 @@ cython_debug/
 #.idea/
 .idea/vcs.xml
 databases/accounts.db
-databases/accounts.db
+*.zip

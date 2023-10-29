@@ -334,7 +334,7 @@ body {
 }
 
 
-.download-media-btn {
+.install-media-btn {
     background: none;
     border: none;
     cursor: pointer;
@@ -348,6 +348,52 @@ body {
     border: 1px #EAECF0 solid;
     border-radius: 8px;
 }
+
+.download-media-form {
+    width: 275px;
+}
+.download-media-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    letter-spacing: 0em;
+    text-align: left;
+    padding: 10px 16px;
+    border: 1px #EAECF0 solid;
+    border-radius: 8px;
+    text-align: center;
+    width: 275px;
+
+}
+
+.download-media-btn-active {
+    background-color: #6941C6;
+    color: white;
+}
+
+
+.loading-text__wrapper {
+    width: 275px;
+}
+
+.loading-text {
+    padding: 0;
+    margin: 0;
+    margin-top: 7px;
+    opacity: 0.5;
+}
+
+
+.download-media-form__wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
 
 .download-csv-btn {
     background: none;
@@ -462,6 +508,7 @@ body {
 .landing-st {
     width: 90px;
     margin: auto 0;
+    color: #6941C6;
 
 }
 
@@ -525,6 +572,7 @@ download-modal {
     padding: 10px;
     z-index: 1;
     opacity: 1;
+    width: 220px;
 }
 
 .show {
@@ -550,6 +598,10 @@ download-modal {
     display: block;
     animation-duration: 2s;
     animation-name: disap;
+}
+
+.removed {
+    display: none;
 }
 
 @keyframes disap {
@@ -580,3 +632,17 @@ download-modal {
 .red-color-modal {
     border: 3px red dashed;
 }
+
+.download-certain-media-form {
+display: flex;
+}
+
+.download-certain-media-btn {
+    background: none;
+    border: none;
+    text-decoration: underline;
+    color: #6941C6;
+    font-size: 14px;
+    cursor: pointer;
+}
+
