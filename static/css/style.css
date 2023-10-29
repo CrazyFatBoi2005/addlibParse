@@ -370,6 +370,12 @@ body {
 
 }
 
+.download-media-btn-active {
+    background-color: #6941C6;
+    color: white;
+}
+
+
 .loading-text__wrapper {
     width: 275px;
 }

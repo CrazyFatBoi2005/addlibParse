@@ -8,6 +8,8 @@
     <meta charset="utf-8">
     <title>Document</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.3/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 </head>
 
 <body>
@@ -32,7 +34,7 @@
                         </form>
                     </div>
                 </div>
-                <div class="download-media-form__wrapper">
+                <div class="download-media-form__wrapper" id="download-media-form__wrapper" data-acc-name="{{account_name}}">
                         <form method="post" class="download-media-form" action="{{ url_for('download_media', account_name=account_name)}}">
                             <button class="download-media-btn" id="download-media-btn" disabled>Download Media</button>
                         </form>

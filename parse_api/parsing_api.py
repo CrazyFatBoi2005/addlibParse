@@ -1,3 +1,5 @@
+import os
+import shutil
 import time
 import zipfile
 from io import BytesIO
@@ -13,10 +15,12 @@ from apscheduler.triggers.cron import CronTrigger
 from data.jobqueue import Job
 from data.accounts import Account
 from data.advertisement import Advertisements
+from flask_cors import CORS
 
 from parse_requests import parse_page
 
 app = Flask(__name__)
+CORS(app)
 scheduler = BackgroundScheduler()
 app.config['SECRET_KEY'] = "NikitinPlaxin31524011"
 app.config['BACKEND_IP'] = "http://127.0.0.1:5000"
@@ -40,7 +44,7 @@ def install_media(account_id):
                                    Advertisements.ad_mediaType) \
         .filter(Advertisements.account_id == account_id).all()
 
-    with zipfile.ZipFile(f"../media_zips/{acc_name}_media.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
+    with zipfile.ZipFile(f"../temporary_zips/{acc_name}_media.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
         for image_url, ad_id_another, media_type in download_links:
             try:
                 # proxies = {
@@ -57,8 +61,20 @@ def install_media(account_id):
             except requests.exceptions.MissingSchema:
                 continue
     print("It's done!")
+    file_to_move = f"{acc_name}_media.zip"
+    source_path = os.path.join("../temporary_zips", file_to_move)
+    destination_path = os.path.join("../media_zips", file_to_move)
+    shutil.move(source_path, destination_path)
     requests.post(f"{app.config.get('BACKEND_IP')}/refresh_media/{account_id}")
     return "200"
+
+
+@app.route('/check_fully_download/<string:account_name>', methods=["POST", "GET"])
+def check_fully_download(account_name):
+    file_path = f"../media_zips/{account_name}_media.zip"
+    file_exists = os.path.exists(file_path)
+    print(file_exists)
+    return jsonify({"status": file_exists})
 
 
 @app.route('/add_new_account/<int:id>/<string:platform>/<string:media>', methods=["POST"])

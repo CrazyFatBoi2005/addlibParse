@@ -23,12 +23,14 @@ var downloadMediaBtn = document.getElementById("download-media-btn");
 
 function enableButton() {
   downloadMediaBtn.disabled = false;
+  downloadMediaBtn.classList.add("download-media-btn-active");
   localStorage.setItem(key, "btnEnabled");
 
 }
 
 function disableButton() {
   downloadMediaBtn.disabled = true;
+  downloadMediaBtn.classList.remove("download-media-btn-active");
   localStorage.setItem(key, "btnDisabled");
 }
 
@@ -47,26 +49,59 @@ socket.on('disable_btn', function(data) {
     disableButton();
 });
 
-
+var media_key = "mediaProcess_" + pageId;
 var textLoading = document.getElementById("loading-text");
-installBtn.addEventListener('click', () => {
-  var dots = 1; // Начальное количество точек
-
-  function updateText() {
+var maxDots = 3;
+var dots = 0;
+function typeText() {
     textLoading.textContent = "Loading" + ".".repeat(dots);
+    dots = (dots % maxDots) + 1;
 
-    dots = (dots % 3) + 1;
-  }
+    if (dots <= maxDots) {
+        typingInterval = setTimeout(typeText, 500);
+    }
+}
 
-  var intervalId = setInterval(updateText, 500);
+installBtn.addEventListener('click', () => {
+  localStorage.setItem(media_key, "active");
+
+  typeText()
 
   socket.on('media_is_ready', function(data) {
     enableButton();
-    clearInterval(intervalId);
+    clearTimeout(typingInterval);
     textLoading.textContent = "Ready!"
     console.log('Данные обновлены:', data);
 });
 
 });
 
-console.log(localStorage.getItem(key));
+
+document.addEventListener("DOMContentLoaded", function() {
+    var mediaProcess = localStorage.getItem(media_key);
+    console.log(mediaProcess);
+    if (mediaProcess === "active") {
+        var acc_name = document.getElementById("download-media-form__wrapper").getAttribute("data-acc-name");
+        var checker_url = "http://127.0.0.1:8800/check_fully_download/" + acc_name
+        typeText()
+        function pollProgramStatus() {
+            $.get(checker_url, function(data) {
+                var status = data.status;
+                var acc_name = document.getElementById("download-media-form__wrapper").getAttribute("data-acc-name");
+                if (status) {
+                    enableButton();
+                    clearTimeout(typingInterval);
+                    textLoading.textContent = "Ready!";
+                    localStorage.setItem(media_key, "inactive");
+                    return
+                }
+                console.log(status);
+
+                setTimeout(pollProgramStatus, 5000);
+            });
+        }
+
+        pollProgramStatus();
+    }
+});
+
