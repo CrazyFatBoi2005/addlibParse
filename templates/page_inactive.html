@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../static/css/style.css" rel="stylesheet">
+    <meta charset="utf-8">
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.3/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+</head>
+
+<body>
+    <main class="inactive-ads-main-container">
+        <section class="pages-content">
+            <section class="add-new-page">
+                <div class="add-new-page__form-main">
+                    <div class="with-back-btn-wrapper">
+                        <div style="display: flex; width: 180px; justify-content: space-between;">
+                            <a href="/" class="back-to-pages">Home page</a>
+                            <a href="{{url_for('ads', account_id=account_id, ad_status='active')}}" class="back-to-pages">Active ads</a>
+                        </div>
+                        <div class="add-new-page__wrapper add-new-page__wrapper-page">
+                            <h3 class="no-margins ad-pages-text">{{account_name}}</h3>
+                            <p class="no-margins ads-quantity">{{ads_count}} ads</p>
+                        </div>
+                    </div>
+                    <div class="page-btns">
+                        <button class="filter-btn" id="open-filter">Filter Ads</button>
+                        <form method="post" action="{{ url_for('install_media', account_id=account_id, account_name=account_name, ad_status=ad_status)}}" id="install-media-form">
+                            <button class="install-media-btn" id="install-media-btn">Install Media</button>
+                        </form>
+                        <form  method="post" action="{{ url_for('download_csv', account_id=account_id, ad_status=ad_status)}}">
+                            <button class="download-csv-btn">Download CSV</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="download-media-form__wrapper" id="download-media-form__wrapper" data-acc-name="{{account_name}}">
+                        <form method="post" class="download-media-form" action="{{ url_for('download_media', account_name=account_name, ad_status=ad_status)}}">
+                            <button class="download-media-btn" id="download-media-btn" disabled>Download Media</button>
+                        </form>
+                    <div class="loading-text__wrapper">
+                        <p class="loading-text" id="loading-text"></p>
+                    </div>
+
+                </div>
+            </section>
+            <section class="ads-content__content">
+                <ul class="ads-content__content-list">
+                    <li class="ads-content__content-title inactive-ads-content__content-title">
+                        <p class="ads-name-characteristics characteristics-text">Name</p>
+                        <p class="text-characteristics characteristics-text">Text</p>
+                        <p class="cta-characteristics characteristics-text">CTA</p>
+                        <p class="date-characteristics characteristics-text">Ad start date</p>
+                        <p class="date-characteristics characteristics-text">Ad end date</p>
+                        <p class="days-active-characteristics characteristics-text">Days active</p>
+                        <p class="file-characteristics characteristics-text">File</p>
+                        <p class="landing-characteristics characteristics-text">Landing</p>
+
+                    </li>
+                    {% for ad in ads %}
+                    <li class="ads-content__content-item inactive-ads-content__content-item">
+                        <div class="ads-content-item-describer">
+                            <div class="box">
+                                <img src="{{ad.ad_image}}" alt="">
+                                {% if ad.ad_mediaType == "Video" %}
+                                <img class="video_player_image" src="https://www.pngarts.com/files/2/Play-Button-PNG-Picture.png" alt="" style="opacity: 0.75">
+                                {% endif %}
+                            </div>
+                            <div class="ads-user-naming__wrapper">
+                                <a class="ads-num no-margins" href="{{adlib_account_link}}&id={{ad.ad_id_another}}" target="_blank">{{ad.ad_id_another}}</a>
+                                <p class="ads-date no-margins">{{ad.ad_date}}</p>
+                            </div>
+                        </div>
+                        <p class="text-st">{{ad.ad_text}}</p>
+                        <p class="cta-st no-margins">{{ad.ad_buttonStatus}}</p>
+                        <p class="date-st no-margins">{{ad.ad_start_date}}</p>
+                        <p class="date-st no-margins">{{ad.ad_end_date}}</p>
+
+                        <p class="days-active-st no-margins">{{ad.ad_daysActive}}</p>
+                        <form method="post" action="{{ url_for('download_certain_media', image_id=ad.ad_id_another)}}"
+                        class="download-certain-media-form">
+                            <button class="file-st no-margins download-certain-media-btn">Download File</button>
+                        </form>
+                        <p class="landing-st no-margins" style="color: black;">No Landing</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        </section>
+        <section class="modal__filter-window" id="filter-window">
+            <div class="modal-wrapper">
+                <form method="post" id="filter-form" action="{{ url_for('filter_ads', account_id=account_id, ad_status=ad_status)}}" class="add-new-page__form">
+                    <div class="title-close">
+                        <h3 class="modal-title">Filter Ads</h3>
+                        <button class="modal__close-btn" id="close-filter" type="button">
+                            <svg width="44" height="45" viewBox="0 0 44 45" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M28 16.5L16 28.5M16 16.5L28 28.5" stroke="#667085" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="url-wrapper">
+                        <label for="contains-text">Contains text</label>
+                        <input class="page-url-field" type="text" placeholder="Contains text" id="contains-text" name="contains-text">
+                    </div>
+                    <div class="add-setting__wrapper">
+                        <ul class="options-list ads-options-list">
+                            <li class="options-item options-item-days">
+                                <label class="options-item-lb" for="over" >Over X Days</label>
+                                <input type="number" class="options-select" id="over" name="over" min="0" value="0">
+                            </li>
+                            <li class="options-item">
+                                <label class="options-item-lb" for="platforms">Platform</label>
+                                <select class="options-select" id="platforms" name="platforms">
+                                    <option>All Platforms</option>
+                                    <option>Facebook</option>
+                                    <option>Instagram</option>
+                                    <option>Audience Network</option>
+                                    <option>Messenger</option>
+                                </select>
+                            </li>
+                            <li class="options-item">
+                                <label class="options-item-lb" for="media">Media Type</label>
+                                <select class="options-select" id="media" name="media">
+                                    <option>All Types</option>
+                                    <option>Image</option>
+                                    <option>Video</option>
+                                </select>
+                            </li>
+                            <li class="options-item">
+                                <label class="options-item-lb" for="start-date">Start Date</label>
+                                <input type="date" class="options-select" id="start-date" name="start-date" value="{{cur_date}}">
+                            </li>
+                        </ul>
+                    </div>
+                    <button class="options-add-new-page-btn" type="submit">Filter Ads</button>
+                </form>
+            </div>
+        </section>
+    </main>
+    <section id="download-modal" class="modal download-modal">
+
+        <div class="modal-content">
+            <span id="closeDownloadModal" class="close">&times;</span>
+            <p id="downloadModal-text">The download has started! <br>This may take some time.</p>
+        </div>
+    </section>
+    <script src="../static/js/filter-inactive.js"></script>
+</body>
+
+</html>

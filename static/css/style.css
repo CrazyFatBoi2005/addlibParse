@@ -13,13 +13,19 @@ body {
 }
 
 .ads-main-container {
-    width: 1216px;
+    width: 1350px;
+    margin: auto;
+}
+
+.inactive-ads-main-container {
+    width: 1350px;
     margin: auto;
 }
 
 .add-new-page__wrapper {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
+    width: 165px;
 }
 
 .pages-content__content-list,
@@ -36,12 +42,22 @@ body {
     border-radius: 10px;
 }
 
+.ads-content__content-title {
+    display: grid;
+    grid-template-columns: 200px 460px 117px 200px 100px 100px 90px;
+}
+
+.inactive-ads-content__content-title {
+    display: grid;
+    grid-template-columns: 200px 460px 117px 100px 100px 100px 100px 90px;
+}
+
 .pages-content__content-item,
 .ads-content__content-item {
     display: flex;
     justify-content: space-between;
     padding: 10px 0 10px 0;
-    
+
     font-size: 14px;
     font-weight: 400;
     line-height: 20px;
@@ -53,6 +69,16 @@ body {
 
 }
 
+.ads-content__content-item {
+    display: grid;
+    grid-template-columns: 200px 460px 117px 200px 100px 100px 90px;
+}
+
+.inactive-ads-content__content-item {
+    grid-template-columns: 200px 460px 117px 100px 100px 100px 100px 90px;
+
+}
+
 .page-user-naming__wrapper {
     display: flex;
     flex-direction: column;
@@ -60,8 +86,7 @@ body {
     justify-content: space-between;
 }
 
-.content-item-describer,
-.ads-content-item-describer {
+.content-item-describer {
     display: flex;
     width: 498px;
     margin-left: 30px;
@@ -123,7 +148,7 @@ body {
 
 .ad-pages-text {
 
-    
+
     font-size: 18px;
     font-weight: 600;
     line-height: 28px;
@@ -143,7 +168,7 @@ body {
 }
 
 .add-new-pages-btn {
-    
+
     font-size: 14px;
     font-weight: 300;
     line-height: 12px;
@@ -157,7 +182,7 @@ body {
 }
 
 .characteristics-text {
-    
+
     font-size: 12px;
     font-weight: 500;
     line-height: 18px;
@@ -167,7 +192,7 @@ body {
 }
 
 .channel_nickname {
-    
+
     font-size: 14px;
     font-weight: 400;
     line-height: 20px;
@@ -205,7 +230,7 @@ body {
     border: 0.3px #D0D5DD solid;
     background: white;
     border-radius: 10px;
-    
+
     font-size: 16px;
     font-weight: 500;
     line-height: 24px;
@@ -225,7 +250,7 @@ body {
 }
 
 .modal-title {
-    
+
     font-size: 18px;
     font-weight: 600;
     line-height: 28px;
@@ -296,14 +321,27 @@ body {
 .back-to-pages {
     background: none;
     border: none;
-    
+
     font-size: 14px;
     font-weight: 400;
     line-height: 20px;
     letter-spacing: 0em;
     text-align: left;
+    color: #6941C6;
     text-decoration: none;
-    color: black;
+
+}
+
+.go-to-inactive {
+    background: none;
+    border: none;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    letter-spacing: 0em;
+    text-align: left;
+    color: #6941C6;
 }
 
 .with-back-btn-wrapper {
@@ -322,7 +360,7 @@ body {
 .filter-btn {
     background: none;
     border: none;
-    
+
     font-size: 14px;
     font-weight: 400;
     line-height: 20px;
@@ -338,7 +376,7 @@ body {
     background: none;
     border: none;
     cursor: pointer;
-    
+
     font-size: 14px;
     font-weight: 400;
     line-height: 20px;
@@ -399,7 +437,7 @@ body {
     background: none;
     border: none;
     cursor: pointer;
-    
+
     font-size: 14px;
     font-weight: 400;
     line-height: 20px;
@@ -414,7 +452,7 @@ body {
 .ads-quantity {
     background: #F9F5FF;
     border-radius: 5px;
-    
+
     font-size: 12px;
     font-weight: 500;
     line-height: 18px;
@@ -428,7 +466,7 @@ body {
 
 .ads-num {
     color: #6941C6;
-    
+
     font-size: 14px;
     font-weight: 500;
     line-height: 20px;
@@ -439,7 +477,7 @@ body {
 }
 
 .ads-date {
-    
+
     font-size: 14px;
     font-weight: 500;
     line-height: 20px;
@@ -450,24 +488,30 @@ body {
 .ads-user-naming__wrapper {
     display: flex;
     flex-direction: column;
-    margin-left: 20px;
 }
 
 .ads-name-characteristics {
-    width: 260px;
     margin-left: 30px;
 }
 
 .text-characteristics {
-    width: 458px;
 }
 
 .text-st {
-    width: 458px;
+    margin: auto 0;
 }
 
 .ads-content-item-describer {
-    width: 250px;
+    display: flex;
+    flex-direction: column;
+    margin-left: 26px;
+    align-items: flex-start;
+    margin-left: 30px;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 18px;
+    letter-spacing: 0em;
+    text-align: left;
 }
 
 .cta-characteristics {
@@ -487,26 +531,27 @@ body {
 }
 
 .cta-st {
-    width: 117px;
     margin: auto 0;
     break-words: break-all;
 
 }
 
+.date-st{
+    margin: auto 0;
+    break-words: break-all;
+}
+
 .days-active-st {
-    width: 100px;
     margin: auto 0;
 
 }
 
 .file-st {
-    width: 100px;
     margin: auto 0;
 
 }
 
 .landing-st {
-    width: 90px;
     margin: auto 0;
     color: #6941C6;
 
@@ -645,4 +690,3 @@ display: flex;
     font-size: 14px;
     cursor: pointer;
 }
-

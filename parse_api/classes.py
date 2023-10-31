@@ -70,7 +70,7 @@ class Ad:
                                                  "x1h4wwuj x1fcty0u x1lliihq").get("href")
         except:
             self.landing = "NO LANDING"
-            print(self.id, self.landing)
+            # print(self.id, self.landing)
 
         try:
 
@@ -105,8 +105,7 @@ class Ad:
             self.status = soup.find("span",
                                     class_="x8t9es0 xw23nyj xo1l8bm x63nzvj x108nfp6 xq9mrsl x1h4wwuj xeuugli x1i64zmx").get_text()
         """
-        date = soup.find_all("span", class_="x8t9es0 xw23nyj xo1l8bm x63nzvj x108nfp6 xq9mrsl x1h4wwuj"
-                                            " xeuugli")[1].get_text().split(' ')
+        date = soup.find_all("span", class_="x8t9es0 xw23nyj xo1l8bm x63nzvj x108nfp6 xq9mrsl x1h4wwuj xeuugli")[1].get_text().split(' ')
         # date parse
         try:
             try:
@@ -116,24 +115,24 @@ class Ad:
             self.start_date = datetime.date(year, month, day)
             self.duration = str((datetime.date.today() - self.start_date).days)
             self.start_date = str(self.start_date)
-            self.status = "Активно"
+            self.end_date = "_"
+            self.status = "Active"
         except:
             try:
                 day, month, year = int(date[1]), dates[date[2]], int(date[3])
                 self.start_date = datetime.date(year, month, day)
 
                 day, month, year = int(date[6]), dates[date[7]], int(date[8])
-                end_date = datetime.date(year, month, day)
+                self.end_date = datetime.date(year, month, day)
             except:
                 day, month, year = int(date[1][:-1]), dates_eng[date[0]], int(date[2])
                 self.start_date = datetime.date(year, month, day)
 
                 day, month, year = int(date[5][:-1]), dates_eng[date[4]], int(date[6])
-                end_date = datetime.date(year, month, day)
-
-            self.duration = str((end_date - self.start_date).days)
+                self.end_date = datetime.date(year, month, day)
+            self.duration = str((self.end_date - self.start_date).days)
             self.start_date = str(self.start_date)
-            self.status = "Не активно"
+            self.status = "Inactive"
         self.platforms = []
         for platform in soup.find_all("div", class_="xtwfq29"):
             if platform['style'] in platform_styles.keys():
@@ -164,6 +163,13 @@ class Account:
     def count_active(self):
         count = 0
         for ad in self.ads:
-            if ad.status == "Активно":
+            if ad.status == "Active":
+                count += 1
+        return count
+
+    def count_inactive(self):
+        count = 0
+        for ad in self.ads:
+            if ad.status == "Inactive":
                 count += 1
         return count

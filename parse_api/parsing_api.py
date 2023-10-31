@@ -9,7 +9,7 @@ from apscheduler.jobstores.base import ConflictingIdError
 
 from data import db_session
 import multiprocessing as mp
-from flask import Flask, jsonify, send_file
+from flask import Flask, jsonify, send_file, request
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
@@ -39,38 +39,82 @@ def delete_job(id):
 @app.route('/install_media/<int:account_id>', methods=["POST", "GET"])
 def install_media(account_id):
     print("It's started")
+    ad_status = request.args.get("ad_status")
     db_sess = db_session.create_session()
     acc_name = db_sess.query(Account.account_name).filter(Account.acc_id == account_id)[0][0]
-    download_links = db_sess.query(Advertisements.ad_downloadLink, Advertisements.ad_id_another,
-                                   Advertisements.ad_mediaType) \
-        .filter(Advertisements.account_id == account_id).all()
+    if ad_status == "active":
+        download_links = db_sess.query(Advertisements.ad_downloadLink, Advertisements.ad_id_another,
+                                       Advertisements.ad_mediaType) \
+            .filter(Advertisements.account_id == account_id, Advertisements.ad_status == "Active").all()
 
-    with zipfile.ZipFile(f"../temporary_zips/{acc_name}_media.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for image_url, ad_id_another, media_type in download_links:
-            try:
-                response = requests.get(image_url)
-                if response.status_code == 200:
-                    image_data = response.content
-                    if "Video" in media_type:
-                        zipf.writestr(f'video_{ad_id_another}.mp4', image_data)
-                    else:
-                        zipf.writestr(f'image_{ad_id_another}.jpg', image_data)
-            except requests.exceptions.MissingSchema:
-                continue
-    print("It's done!")
-    file_to_move = f"{acc_name}_media.zip"
-    source_path = os.path.join("../temporary_zips", file_to_move)
-    destination_path = os.path.join("../media_zips", file_to_move)
-    shutil.move(source_path, destination_path)
-    requests.post(f"{app.config.get('BACKEND_IP')}/refresh_media/{account_id}")
+        with zipfile.ZipFile(f"../temporary_zips/{acc_name}_active_media.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for image_url, ad_id_another, media_type in download_links:
+                try:
+                    response = requests.get(image_url)
+                    if response.status_code == 200:
+                        image_data = response.content
+                        if "Video" in media_type:
+                            zipf.writestr(f'video_{ad_id_another}.mp4', image_data)
+                        else:
+                            zipf.writestr(f'image_{ad_id_another}.jpg', image_data)
+                except:
+                    continue
+        print("It's done!")
+        file_to_move = f"{acc_name}_active_media.zip"
+        source_path = os.path.join("../temporary_zips", file_to_move)
+        destination_path = os.path.join("../media_zips", file_to_move)
+        shutil.move(source_path, destination_path)
+    else:
+        download_links = db_sess.query(Advertisements.ad_downloadLink, Advertisements.ad_id_another,
+                                       Advertisements.ad_mediaType) \
+            .filter(Advertisements.account_id == account_id, Advertisements.ad_status == "Inactive").all()
+
+        with zipfile.ZipFile(f"../temporary_zips/{acc_name}_inactive_media.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for image_url, ad_id_another, media_type in download_links:
+                try:
+                    response = requests.get(image_url)
+                    if response.status_code == 200:
+                        image_data = response.content
+                        if "Video" in media_type:
+                            zipf.writestr(f'video_{ad_id_another}.mp4', image_data)
+                        else:
+                            zipf.writestr(f'image_{ad_id_another}.jpg', image_data)
+                except requests.exceptions.MissingSchema:
+                    continue
+        print("It's done!")
+        file_to_move = f"{acc_name}_inactive_media.zip"
+        source_path = os.path.join("../temporary_zips", file_to_move)
+        destination_path = os.path.join("../media_zips", file_to_move)
+        shutil.move(source_path, destination_path)
+    requests.post(f"{app.config.get('BACKEND_IP')}/refresh_media/{account_id}?ad_status={ad_status}")
+    return "200"
+
+
+@app.route("/delete_media/<string:account_name>", methods=["POST", "GET"])
+def delete_media(account_name):
+    try:
+        print(account_name)
+        ad_status = request.args.get("ad_status")
+        if ad_status == "active":
+            os.unlink(f"../media_zips/{account_name}_active_media.zip")
+        else:
+            os.unlink(f"../media_zips/{account_name}_inactive_media.zip")
+    except:
+        pass
     return "200"
 
 
 @app.route('/check_fully_download/<string:account_name>', methods=["POST", "GET"])
 def check_fully_download(account_name):
-    file_path = f"../media_zips/{account_name}_media.zip"
-    file_exists = os.path.exists(file_path)
-    print(file_exists)
+    ad_status = request.args.get("ad_status")
+    if ad_status == "active":
+        file_path = f"../media_zips/{account_name}_active_media.zip"
+        file_exists = os.path.exists(file_path)
+        print(file_exists)
+    else:
+        file_path = f"../media_zips/{account_name}_inactive_media.zip"
+        file_exists = os.path.exists(file_path)
+        print(file_exists)
     return jsonify({"status": file_exists})
 
 

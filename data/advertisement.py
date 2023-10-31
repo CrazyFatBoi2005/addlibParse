@@ -10,7 +10,8 @@ class Advertisements(SqlAlchemyBase):
     ad_id = sqlalchemy.Column(sqlalchemy.Integer,
                               primary_key=True)
     ad_id_another = sqlalchemy.Column(sqlalchemy.Integer)
-    ad_date = sqlalchemy.Column(sqlalchemy.String)
+    ad_start_date = sqlalchemy.Column(sqlalchemy.String)
+    ad_end_date = sqlalchemy.Column(sqlalchemy.String)
     ad_text = sqlalchemy.Column(sqlalchemy.String)
 
     ad_buttonStatus = sqlalchemy.Column(sqlalchemy.String)
@@ -24,6 +25,8 @@ class Advertisements(SqlAlchemyBase):
     ad_mediaType = sqlalchemy.Column(sqlalchemy.String)
 
     ad_image = sqlalchemy.Column(sqlalchemy.String)
+
+    ad_status = sqlalchemy.Column(sqlalchemy.String)
 
     account_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("accounts.acc_id"))
 

@@ -35,7 +35,7 @@
                     </li>
                     {% for item in accounts %}
                     <li class="pages-content__content-item">
-                        <a href="ads/{{item.acc_id}}"  class="pages-content__content-item-link">
+                        <a href="{{url_for('ads', account_id=item.acc_id, ad_status=ad_status)}}"  class="pages-content__content-item-link">
                             <div class="content-item-describer">
                                 <img src="{{item.account_image}}" alt="" width="40" height="40">
                                 <div class="page-user-naming__wrapper">
