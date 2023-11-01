@@ -47,7 +47,7 @@ def install_media(account_id):
                                        Advertisements.ad_mediaType) \
             .filter(Advertisements.account_id == account_id, Advertisements.ad_status == "Active").all()
 
-        with zipfile.ZipFile(f"../temporary_zips/{acc_name}_active_media.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
+        with zipfile.ZipFile(f"temporary_zips/{acc_name}_active_media.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
             for image_url, ad_id_another, media_type in download_links:
                 try:
                     response = requests.get(image_url)
@@ -61,15 +61,15 @@ def install_media(account_id):
                     continue
         print("It's done!")
         file_to_move = f"{acc_name}_active_media.zip"
-        source_path = os.path.join("../temporary_zips", file_to_move)
-        destination_path = os.path.join("../media_zips", file_to_move)
+        source_path = os.path.join("temporary_zips", file_to_move)
+        destination_path = os.path.join("media_zips", file_to_move)
         shutil.move(source_path, destination_path)
     else:
         download_links = db_sess.query(Advertisements.ad_downloadLink, Advertisements.ad_id_another,
                                        Advertisements.ad_mediaType) \
             .filter(Advertisements.account_id == account_id, Advertisements.ad_status == "Inactive").all()
 
-        with zipfile.ZipFile(f"../temporary_zips/{acc_name}_inactive_media.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
+        with zipfile.ZipFile(f"temporary_zips/{acc_name}_inactive_media.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
             for image_url, ad_id_another, media_type in download_links:
                 try:
                     response = requests.get(image_url)
@@ -83,8 +83,8 @@ def install_media(account_id):
                     continue
         print("It's done!")
         file_to_move = f"{acc_name}_inactive_media.zip"
-        source_path = os.path.join("../temporary_zips", file_to_move)
-        destination_path = os.path.join("../media_zips", file_to_move)
+        source_path = os.path.join("temporary_zips", file_to_move)
+        destination_path = os.path.join("media_zips", file_to_move)
         shutil.move(source_path, destination_path)
     requests.post(f"{app.config.get('BACKEND_IP')}/refresh_media/{account_id}?ad_status={ad_status}")
     return "200"
@@ -96,9 +96,9 @@ def delete_media(account_name):
         print(account_name)
         ad_status = request.args.get("ad_status")
         if ad_status == "active":
-            os.unlink(f"../media_zips/{account_name}_active_media.zip")
+            os.unlink(f"media_zips/{account_name}_active_media.zip")
         else:
-            os.unlink(f"../media_zips/{account_name}_inactive_media.zip")
+            os.unlink(f"media_zips/{account_name}_inactive_media.zip")
     except:
         pass
     return "200"
@@ -108,11 +108,11 @@ def delete_media(account_name):
 def check_fully_download(account_name):
     ad_status = request.args.get("ad_status")
     if ad_status == "active":
-        file_path = f"../media_zips/{account_name}_active_media.zip"
+        file_path = f"media_zips/{account_name}_active_media.zip"
         file_exists = os.path.exists(file_path)
         print(file_exists)
     else:
-        file_path = f"../media_zips/{account_name}_inactive_media.zip"
+        file_path = f"media_zips/{account_name}_inactive_media.zip"
         file_exists = os.path.exists(file_path)
         print(file_exists)
     return jsonify({"status": file_exists})
@@ -152,7 +152,7 @@ def restart_all_job():
 
 
 def main():
-    db_session.global_init("../databases/accounts.db")
+    db_session.global_init("databases/accounts.db")
     scheduler.start()
     restart_all_job()
     app.run(host="127.0.0.1", port=8800, debug=True)

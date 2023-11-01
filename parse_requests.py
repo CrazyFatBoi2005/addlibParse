@@ -52,10 +52,10 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
           f"&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&search_type=page&media_type=all "
     account = Account(url)
     options = Options()
-    options.add_argument("--headless")
-    profile_directory = r'%AppData%\Mozilla\Firefox\Profiles\42ryon9o.adParseProf'
-    profile = webdriver.FirefoxProfile(os.path.expandvars(profile_directory))
-    options.profile = profile
+    # options.add_argument("--headless")
+    # profile_directory = r'%AppData%\Mozilla\Firefox\Profiles\42ryon9o.adParseProf'
+    # profile = webdriver.FirefoxProfile(os.path.expandvars(profile_directory))
+    # options.profile = profile
     driver = webdriver.Firefox(options=options)
     driver.get(url_with_filters)
     try:
@@ -118,7 +118,28 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
     old_ads_id = db_sess.query(Advertisements.ad_id_another).all()
     old_ads_id = [ad[0] for ad in old_ads_id]
     for ad in account.ads:
-        if int(ad.id) not in old_ads_id:
+        if int(ad.id) in old_ads_id:
+            old_ad = db_sess.query(Advertisements).filter(Advertisements.ad_id_another == ad.id).first()
+            old_ad_status = old_ad.ad_status
+            if ad.status != old_ad_status:
+                db_sess.delete(old_ad)
+                api_ads = Advertisements()
+                api_ads.ad_id_another = ad.id
+                api_ads.ad_image = ad.image
+                api_ads.ad_text = ad.text
+                api_ads.ad_start_date = ad.start_date
+                api_ads.ad_end_date = ad.end_date
+                api_ads.ad_status = ad.status
+                api_ads.ad_buttonStatus = ad.buttonText
+                api_ads.ad_daysActive = ad.duration
+                api_ads.ad_mediaType = ad.media_type
+                api_ads.ad_landingLink = ad.landing
+                api_ads.ad_downloadLink = ad.download
+                api_ads.ad_platform = ad.platforms
+                api_ads.account_id = account.id
+                db_sess.add(api_ads)
+
+        elif int(ad.id) not in old_ads_id:
             api_ads = Advertisements()
             api_ads.ad_id_another = ad.id
             api_ads.ad_image = ad.image
