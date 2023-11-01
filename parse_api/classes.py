@@ -15,6 +15,7 @@ dates = {
     "мар": 3,
     "апр": 4,
     "май": 5,
+    "мая": 5,
     "июн": 6,
     "июл": 7,
     "авг": 8,
@@ -107,32 +108,25 @@ class Ad:
         """
         date = soup.find_all("span", class_="x8t9es0 xw23nyj xo1l8bm x63nzvj x108nfp6 xq9mrsl x1h4wwuj xeuugli")[1].get_text().split(' ')
         # date parse
-        try:
-            try:
-                day, month, year = int(date[2]), dates[date[3]], int(date[4])
-            except:
-                day, month, year = int(date[4][:-1]), dates_eng[date[3]], int(date[5])
+        date = [i for i in date if i.isdigit() or i in dates or i in dates_eng]
+        # print(date)
+        if len(date) == 3:
+            day, month, year = int(date[0]), dates[date[1]], int(date[2])
             self.start_date = datetime.date(year, month, day)
             self.duration = str((datetime.date.today() - self.start_date).days)
             self.start_date = str(self.start_date)
             self.end_date = "_"
             self.status = "Active"
-        except:
-            try:
-                day, month, year = int(date[1]), dates[date[2]], int(date[3])
-                self.start_date = datetime.date(year, month, day)
+        elif len(date) == 6:
+            day, month, year = int(date[0]), dates[date[1]], int(date[2])
+            self.start_date = datetime.date(year, month, day)
+            day, month, year = int(date[3]), dates[date[4]], int(date[5])
+            self.end_date = datetime.date(year, month, day)
 
-                day, month, year = int(date[6]), dates[date[7]], int(date[8])
-                self.end_date = datetime.date(year, month, day)
-            except:
-                day, month, year = int(date[1][:-1]), dates_eng[date[0]], int(date[2])
-                self.start_date = datetime.date(year, month, day)
-
-                day, month, year = int(date[5][:-1]), dates_eng[date[4]], int(date[6])
-                self.end_date = datetime.date(year, month, day)
             self.duration = str((self.end_date - self.start_date).days)
             self.start_date = str(self.start_date)
             self.status = "Inactive"
+
         self.platforms = []
         for platform in soup.find_all("div", class_="xtwfq29"):
             if platform['style'] in platform_styles.keys():

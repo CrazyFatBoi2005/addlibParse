@@ -81,7 +81,7 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
             count = 0
         # scroll down
         last_len = len(page_content)
-        if len(page_content) > 2000 or count >= 20:
+        if len(page_content) > 1500 or count >= 20:
             break
         time.sleep(1)
         driver.execute_script('arguments[0].scrollIntoView(true)', footer)
@@ -133,8 +133,8 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
             api_ads.ad_downloadLink = ad.download
             api_ads.ad_platform = ad.platforms
             api_ads.account_id = account.id
-            print(ad.status)
             db_sess.add(api_ads)
+
     db_sess.commit()
     requests.post(f"{ip}/refresh")
     print(f"Account {account.name} in database, refresh page")

@@ -208,9 +208,11 @@ def download_csv():
             ads.append(db_sess.query(Advertisements).filter(Advertisements.ad_id_another == sorted_id).first())
     else:
         if ad_status == "active":
-            ads = db_sess.query(Advertisements).filter(Advertisements.ad_status == "Active")
+            ads = db_sess.query(Advertisements).filter(Advertisements.ad_status == "Active",
+                                                       Advertisements.account_id == account_id).all()
         else:
-            ads = db_sess.query(Advertisements).filter(Advertisements.ad_status == "Inactive")
+            ads = db_sess.query(Advertisements).filter(Advertisements.ad_status == "Inactive",
+                                                       Advertisements.account_id == account_id).all()
     filename = db_sess.query(Account.account_name).filter(Account.acc_id == account_id).first()[0]
     filename = "_".join(filename.split())
     csv_names_structure = ["ad_id", "ad_accountId", "start_date", "end_date", "ad_text",
