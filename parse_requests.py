@@ -2,7 +2,7 @@ import os
 import time
 import requests
 from sqlalchemy.exc import IntegrityError
-from parse_api.classes import *
+from parse_api.classes import Account, Ad
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
@@ -31,7 +31,11 @@ rename_filter = {
 def parse_page(id: str, platform=None, media=None, ip=None, url=None):
     db_session.global_init("databases/accounts.db")
     if url is None:
-        url_with_filters = f"https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&view_all_page_id={id}{rename_filter[platform]}&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&search_type=page{rename_filter[media]}"
+        url_with_filters = \
+            f"https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&" \
+            f"view_all_page_id={id}{rename_filter[platform]}" \
+            f"&sort_data[direction]=desc&" \
+            f"sort_data[mode]=relevancy_monthly_grouped&search_type=page{rename_filter[media]}"
         db_sess = db_session.create_session()
         job = Job()
         job.account_id = id
@@ -54,7 +58,6 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
     options.profile = profile
     driver = webdriver.Firefox(options=options)
     driver.get(url_with_filters)
-
     try:
         _ = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//div[@class='_7jvw x2izyaf x1hq5gj4 x1d52u69']")))
     except TimeoutError:
@@ -78,11 +81,10 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
             count = 0
         # scroll down
         last_len = len(page_content)
-        if len(page_content) > 150 or count >= 10:
+        if len(page_content) > 1500 or count >= 20:
             break
         time.sleep(1)
         driver.execute_script('arguments[0].scrollIntoView(true)', footer)
-
     result = [Ad(element.get_attribute('innerHTML')) for element in page_content]
     account.ads = result.copy()
     account.total_ads = len(account.ads)
@@ -121,7 +123,9 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
             api_ads.ad_id_another = ad.id
             api_ads.ad_image = ad.image
             api_ads.ad_text = ad.text
-            api_ads.ad_date = ad.start_date
+            api_ads.ad_start_date = ad.start_date
+            api_ads.ad_end_date = ad.end_date
+            api_ads.ad_status = ad.status
             api_ads.ad_buttonStatus = ad.buttonText
             api_ads.ad_daysActive = ad.duration
             api_ads.ad_mediaType = ad.media_type
@@ -130,6 +134,7 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
             api_ads.ad_platform = ad.platforms
             api_ads.account_id = account.id
             db_sess.add(api_ads)
+
     db_sess.commit()
     requests.post(f"{ip}/refresh")
     print(f"Account {account.name} in database, refresh page")

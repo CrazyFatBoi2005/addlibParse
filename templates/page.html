@@ -18,24 +18,27 @@
             <section class="add-new-page">
                 <div class="add-new-page__form-main">
                     <div class="with-back-btn-wrapper">
-                        <a href="/" class="back-to-pages">← Go back</a>
-                        <div class="add-new-page__wrapper">
+                        <div style="display: flex; width: 180px; justify-content: space-between;">
+                            <a href="/" class="back-to-pages">Home page</a>
+                            <a href="{{url_for('inactive_ads', account_id=account_id, ad_status='inactive')}}" class="go-to-inactive">Inactive ads</a>
+                        </div>
+                        <div class="add-new-page__wrapper add-new-page__wrapper-page">
                             <h3 class="no-margins ad-pages-text">{{account_name}}</h3>
                             <p class="no-margins ads-quantity">{{ads_count}} ads</p>
                         </div>
                     </div>
                     <div class="page-btns">
                         <button class="filter-btn" id="open-filter">Filter Ads</button>
-                        <form method="post" action="{{ url_for('install_media', account_id=account_id)}}" id="install-media-form">
+                        <form method="post" action="{{ url_for('install_media', account_id=account_id, account_name=account_name, ad_status=ad_status)}}" id="install-media-form">
                             <button class="install-media-btn" id="install-media-btn">Install Media</button>
                         </form>
-                        <form  method="post" action="{{ url_for('download_csv', account_id=account_id, return_status=return_status)}}">
+                        <form  method="post" action="{{ url_for('download_csv', account_id=account_id, filtered=filtered, ad_status=ad_status)}}">
                             <button class="download-csv-btn">Download CSV</button>
                         </form>
                     </div>
                 </div>
                 <div class="download-media-form__wrapper" id="download-media-form__wrapper" data-acc-name="{{account_name}}">
-                        <form method="post" class="download-media-form" action="{{ url_for('download_media', account_name=account_name)}}">
+                        <form method="post" class="download-media-form" action="{{ url_for('download_media', account_name=account_name, ad_status=ad_status)}}">
                             <button class="download-media-btn" id="download-media-btn" disabled>Download Media</button>
                         </form>
                     <div class="loading-text__wrapper">
@@ -50,10 +53,11 @@
                         <p class="ads-name-characteristics characteristics-text">Name</p>
                         <p class="text-characteristics characteristics-text">Text</p>
                         <p class="cta-characteristics characteristics-text">CTA</p>
+                        <p class="date-characteristics characteristics-text">Ad start date</p>
                         <p class="days-active-characteristics characteristics-text">Days active</p>
                         <p class="file-characteristics characteristics-text">File</p>
                         <p class="landing-characteristics characteristics-text">Landing</p>
-                        </div>
+
                     </li>
                     {% for ad in ads %}
                     <li class="ads-content__content-item">
@@ -65,18 +69,20 @@
                                 {% endif %}
                             </div>
                             <div class="ads-user-naming__wrapper">
-                                <h4 class="ads-num no-margins">{{ad.ad_id_another}}</h4>
+                                <a class="ads-num no-margins" href="{{adlib_account_link}}&id={{ad.ad_id_another}}" target="_blank">{{ad.ad_id_another}}</a>
                                 <p class="ads-date no-margins">{{ad.ad_date}}</p>
                             </div>
                         </div>
                         <p class="text-st">{{ad.ad_text}}</p>
                         <p class="cta-st no-margins">{{ad.ad_buttonStatus}}</p>
+                        <p class="date-st no-margins">{{ad.ad_start_date}}</p>
+
                         <p class="days-active-st no-margins">{{ad.ad_daysActive}}</p>
                         <form method="post" action="{{ url_for('download_certain_media', image_id=ad.ad_id_another)}}"
                         class="download-certain-media-form">
                             <button class="file-st no-margins download-certain-media-btn">Download File</button>
                         </form>
-                        <a href="{{ad.ad_landingLink}}" class="landing-st no-margins">Landing</a>
+                        <a href="{{ad.ad_landingLink}}" class="landing-st no-margins" target="_blank">Landing</a>
                     </li>
                     {% endfor %}
                 </ul>
@@ -84,7 +90,7 @@
         </section>
         <section class="modal__filter-window" id="filter-window">
             <div class="modal-wrapper">
-                <form method="post" id="filter-form" action="{{ url_for('filter_ads', account_id=account_id)}}" class="add-new-page__form">
+                <form method="post" id="filter-form" action="{{ url_for('filter_ads', account_id=account_id, ad_status=ad_status)}}" class="add-new-page__form">
                     <div class="title-close">
                         <h3 class="modal-title">Filter Ads</h3>
                         <button class="modal__close-btn" id="close-filter" type="button">

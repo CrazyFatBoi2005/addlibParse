@@ -162,6 +162,5 @@ cython_debug/
 databases/accounts.db
 *.zip
 *.iml
-*.xml
-*.db
-*.zip
+.idea/addlibParse.iml
+.idea/misc.xml

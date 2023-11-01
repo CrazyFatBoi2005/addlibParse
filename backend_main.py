@@ -30,19 +30,39 @@ def index():
     db_sess = db_session.create_session()
     accounts = db_sess.query(Account).all()
     accounts_count = len(accounts)
-    return render_template("main.html", accounts=accounts, accounts_count=accounts_count)
+    ad_status = "active"
+    return render_template("main.html", accounts=accounts, accounts_count=accounts_count, ad_status=ad_status)
 
 
-@app.route('/ads/<int:account_id>', methods=["GET", "POST"])
-def ads(account_id):
-    return_status = 0
+@app.route('/ads', methods=["GET", "POST"])
+def ads():
+    filtered = 0
+    ad_status = "active"
+    account_id = request.args.get("account_id")
     db_sess = db_session.create_session()
-    ads = db_sess.query(Advertisements).filter(Advertisements.account_id == account_id).all()
-    account_name = db_sess.query(Account.account_name).filter(Account.acc_id == account_id).first()[0]
+    ads = db_sess.query(Advertisements).filter(Advertisements.account_id == account_id,
+                                               Advertisements.ad_status == "Active").all()
+    account_name, adlib_account_link = db_sess.query(Account.account_name, Account.adlib_account_link).filter(Account.acc_id == account_id).first()
     ads_count = len(ads)
     cur_date = str(datetime.date.today())
     return render_template("page.html", ads=ads, ads_count=ads_count, cur_date=cur_date, account_id=account_id,
-                           return_status=return_status, account_name=account_name)
+                           account_name=account_name,
+                           adlib_account_link=adlib_account_link, filtered=filtered, ad_status=ad_status)
+
+
+@app.route('/inactive_ads/', methods=["GET", "POST"])
+def inactive_ads():
+    ad_status = "inactive"
+    account_id = request.args.get("account_id")
+    db_sess = db_session.create_session()
+    ads = db_sess.query(Advertisements).filter(Advertisements.account_id == account_id,
+                                               Advertisements.ad_status == "Inactive").all()
+    account_name, adlib_account_link = db_sess.query(Account.account_name, Account.adlib_account_link).filter(Account.acc_id == account_id).first()
+    ads_count = len(ads)
+    cur_date = str(datetime.date.today())
+    return render_template("page_inactive.html", ads=ads, ads_count=ads_count, cur_date=cur_date, account_id=account_id,
+                           account_name=account_name,
+                           adlib_account_link=adlib_account_link, ad_status=ad_status)
 
 
 @app.route('/add_new_page', methods=["POST"])
@@ -128,8 +148,9 @@ def text_filter(text, ad_text):
 
 @app.route('/filter_ads', methods=["POST"])
 def filter_ads():
-    return_status = 0
+    filtered = 1
     account_id = request.args.get("account_id")
+    ad_status = request.args.get("ad_status")
     request_data = request.form
     text, over_days, platforms, media_type, start_date = request_data.get("contains-text"), \
                                                          request_data.get("over"), \
@@ -148,7 +169,7 @@ def filter_ads():
     filtered_ads = []
     for ad in ads:
         if datetime.datetime.strptime(start_date, '%Y-%m-%d').date() != datetime.date.today():
-            if datetime.datetime.strptime(ad.ad_date,
+            if datetime.datetime.strptime(ad.start_date,
                                           '%Y-%m-%d').date() >= datetime.datetime.strptime(start_date,
                                                                                            '%Y-%m-%d').date():
                 if text_filter(text, ad.ad_text):
@@ -156,62 +177,59 @@ def filter_ads():
         else:
             if text_filter(text, ad.ad_text):
                 filtered_ads.append(ad)
-    session["request_data"] = request_data
+    if ad_status == "active":
+        filtered_ads = [ad for ad in filtered_ads if ad.ad_status == "Active"]
+    else:
+        filtered_ads = [ad for ad in filtered_ads if ad.ad_status == "Inactive"]
+    filtered_id = [i.ad_id_another for i in filtered_ads]
+    session["sorted_ids"] = filtered_id
     ads_count = len(filtered_ads)
 
     cur_date = str(datetime.date.today())
-    account_name = db_sess.query(Account.account_name).filter(Account.acc_id == account_id).first()[0]
+    account_name, adlib_account_link = db_sess.query(Account.account_name, Account.adlib_account_link).filter(Account.acc_id == account_id).first()
 
-    return render_template("page.html", ads=filtered_ads, ads_count=ads_count, cur_date=cur_date, account_id=account_id,
-                           return_status=return_status, account_name=account_name)
+    return render_template("page.html", ads=filtered_ads,
+                           ads_count=ads_count, cur_date=cur_date,
+                           account_id=account_id, account_name=account_name,
+                           adlib_account_link=adlib_account_link, filtered=filtered, ad_status=ad_status)
 
 
 @app.route('/download_csv', methods=["POST", "GET"])
 def download_csv():
-    request_data = session.get('request_data', 'Фильтр не установлен')
-
-    return_status = request.args.get("return_status")
+    sorted_ids = session.get('sorted_ids', [])
+    filtered = request.args.get("filtered")
     account_id = request.args.get("account_id")
+    ad_status = request.args.get("ad_status")
     db_sess = db_session.create_session()
-    if return_status == "0":
-        ads = db_sess.query(Advertisements).filter(Advertisements.account_id == account_id).all()
+    if filtered == "1":
+        ads = []
+        for sorted_id in sorted_ids:
+            ads.append(db_sess.query(Advertisements).filter(Advertisements.ad_id_another == sorted_id).first())
     else:
-        if return_status == "1":
-            ads, return_status = status1_filtration(db_sess, account_id, over_days=int(request_data["over"]))
-        elif return_status == "2":
-            ads, return_status = status2_filtration(db_sess, account_id, over_days=int(request_data["over"]),
-                                                    media_type=request_data["media"])
-        elif return_status == "3":
-            ads, return_status = status3_filtration(db_sess, account_id, over_days=int(request_data["over"]),
-                                                    platforms=request_data["platforms"])
-        elif return_status == "4":
-            ads, return_status = status4_filtration(db_sess, account_id, over_days=int(request_data["over"]),
-                                                    platforms=request_data["platforms"],
-                                                    media_type=request_data["media"])
-        filtered_ads = []
-        for ad in ads:
-            if datetime.datetime.strptime(ad.ad_date, '%Y-%m-%d').date()\
-                    >= datetime.datetime.strptime(request_data["start-date"], '%Y-%m-%d').date():
-                filtered_ads.append(ad)
-        ads = filtered_ads
+        if ad_status == "active":
+            ads = db_sess.query(Advertisements).filter(Advertisements.ad_status == "Active",
+                                                       Advertisements.account_id == account_id).all()
+        else:
+            ads = db_sess.query(Advertisements).filter(Advertisements.ad_status == "Inactive",
+                                                       Advertisements.account_id == account_id).all()
     filename = db_sess.query(Account.account_name).filter(Account.acc_id == account_id).first()[0]
     filename = "_".join(filename.split())
-    csv_names_structure = ["ad_id", "ad_accountId", "ad_date", "ad_text",
+    csv_names_structure = ["ad_id", "ad_accountId", "start_date", "end_date", "ad_text",
                            "ad_buttonStatus", "ad_daysActive", "ad_downloadLink",
                            "ad_landingLink", "ad_platform", "ad_image"]
 
     data = [csv_names_structure]
     for ad in ads:
-        ad_id, ad_accountId, ad_date, \
+        ad_id, ad_accountId, ad_start_date, ad_end_date, \
         ad_text, ad_buttonStatus, \
         ad_daysActive, \
         ad_downloadLink, \
         ad_landingLink, \
         ad_platform, \
-        ad_image = ad.ad_id_another, ad.account_id, ad.ad_date, \
+        ad_image = ad.ad_id_another, ad.account_id, ad.ad_start_date, ad.ad_end_date, \
                    ad.ad_text, ad.ad_buttonStatus, ad.ad_daysActive, \
                    ad.ad_downloadLink, ad.ad_landingLink, ad.ad_platform, ad.ad_image
-        data.append([ad_id, ad_accountId, ad_date, ad_text, ad_buttonStatus,
+        data.append([ad_id, ad_accountId, ad_start_date, ad_end_date, ad_text, ad_buttonStatus,
                      ad_daysActive, ad_downloadLink, ad_landingLink, ad_platform, ad_image])
 
     csv_buffer = io.StringIO()
@@ -235,23 +253,38 @@ def download_csv():
 @app.route('/install_media', methods=["POST"])
 def install_media():
     account_id = request.args.get("account_id")
-    print(f"{app.config.get('API_IP')}")
-    future = session_.get(f"{app.config.get('API_IP')}/install_media/{account_id}")
+    account_name = request.args.get("account_name")
+    ad_status = request.args.get("ad_status")
+    print(ad_status)
+    if ad_status == "active":
+        socketio.emit('disable_btn', "")
+    else:
+        socketio.emit('inactive_disable_btn', "")
+    # session_.get(f"{app.config.get('API_IP')}/delete_media/{account_name}")
+    session_.get(f"{app.config.get('API_IP')}/delete_media/{account_name}?ad_status={ad_status}")
+    session_.get(f"{app.config.get('API_IP')}/install_media/{account_id}?ad_status={ad_status}")
 
     return "", 204
 
 
 @app.route('/download_media', methods=["POST"])
 def download_media():
-    account_name = request.args.get("account_name") + "_media"
-    socketio.emit('disable_btn', "")
+    ad_status = request.args.get("ad_status")
+    if ad_status == "active":
+        account_name = request.args.get("account_name") + "_active_media"
+    else:
+        account_name = request.args.get("account_name") + "_inactive_media"
 
     return send_file(f"media_zips/{account_name}.zip", mimetype="application/zip")
 
 
 @app.route('/refresh_media/<int:account_id>', methods=["POST"])
 def refresh_media(account_id):
-    socketio.emit('media_is_ready', account_id)
+    ad_status = request.args.get("ad_status")
+    if ad_status == "active":
+        socketio.emit('media_is_ready', account_id)
+    else:
+        socketio.emit('inactive_media_is_ready', account_id)
     return "OK", 200
 
 
