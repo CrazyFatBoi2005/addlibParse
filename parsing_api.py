@@ -24,7 +24,7 @@ app = Flask(__name__)
 CORS(app)
 scheduler = BackgroundScheduler()
 app.config['SECRET_KEY'] = "NikitinPlaxin31524011"
-app.config['BACKEND_IP'] = "http://127.0.0.1:5000"
+app.config['BACKEND_IP'] = "http://178.253.42.233:5000"
 
 
 @app.route('/delete_job/<int:id>', methods=["POST"])
@@ -45,7 +45,7 @@ def install_media(account_id):
                                    Advertisements.ad_mediaType) \
         .filter(Advertisements.account_id == account_id).all()
 
-    with zipfile.ZipFile(f"../temporary_zips/{acc_name}_media.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
+    with zipfile.ZipFile(f"temporary_zips/{acc_name}_media.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
         for image_url, ad_id_another, media_type in download_links:
             try:
                 response = requests.get(image_url)
@@ -59,8 +59,8 @@ def install_media(account_id):
                 continue
     print("It's done!")
     file_to_move = f"{acc_name}_media.zip"
-    source_path = os.path.join("../temporary_zips", file_to_move)
-    destination_path = os.path.join("../media_zips", file_to_move)
+    source_path = os.path.join("temporary_zips", file_to_move)
+    destination_path = os.path.join("media_zips", file_to_move)
     shutil.move(source_path, destination_path)
     requests.post(f"{app.config.get('BACKEND_IP')}/refresh_media/{account_id}")
     return "200"
@@ -68,7 +68,7 @@ def install_media(account_id):
 
 @app.route('/check_fully_download/<string:account_name>', methods=["POST", "GET"])
 def check_fully_download(account_name):
-    file_path = f"../media_zips/{account_name}_media.zip"
+    file_path = f"media_zips/{account_name}_media.zip"
     file_exists = os.path.exists(file_path)
     print(file_exists)
     return jsonify({"status": file_exists})
@@ -108,10 +108,10 @@ def restart_all_job():
 
 
 def main():
-    db_session.global_init("../databases/accounts.db")
+    db_session.global_init("databases/accounts.db")
     scheduler.start()
     restart_all_job()
-    app.run(host="127.0.0.1", port=8800, debug=True)
+    app.run(host="178.253.42.233", port=8800, debug=True)
 
 
 if __name__ == '__main__':
