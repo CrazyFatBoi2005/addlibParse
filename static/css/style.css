@@ -25,7 +25,7 @@ body {
 .add-new-page__wrapper {
     display: flex;
     justify-content: space-between;
-    width: 165px;
+    width: max-content;
 }
 
 .pages-content__content-list,

@@ -8,6 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 from data.accounts import Account as ApiAccount
 from data.jobqueue import Job
 from data.advertisement import Advertisements
@@ -59,13 +60,20 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
     driver = webdriver.Firefox(options=options)
     driver.get(url_with_filters)
     try:
+        print(20)
         _ = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//div[@class='_7jvw x2izyaf x1hq5gj4 x1d52u69']")))
-    except TimeoutError:
+    except TimeoutException:
         print("empty account")
     time.sleep(1)
     account.name = driver.find_element(By.XPATH, "//div[@class='x8t9es0 x1ldc4aq x1xlr1w8 x1cgboj8 x4hq6eo xq9mrsl x1yc453h x1h4wwuj xeuugli']").text
-    account.nickname = "@" + driver.find_elements(By.XPATH, "//a[@class='xt0psk2 x1hl2dhg xt0b8zv x8t9es0 x1fvot60 xxio538 xjnfcd9 xq9mrsl x1yc453h x1h4wwuj x1fcty0u']")[-1].get_attribute("href").split("/")[-1]
-    account.image = driver.find_element(By.XPATH, "//img[@class='xl1xv1r x78zum5 x193iq5w x1us19tq xkrh0ho x1aqa79q x10btfu9 x1e152vy']").get_attribute("src")
+    try:
+        account.nickname = "@" + driver.find_elements(By.XPATH, "//a[@class='xt0psk2 x1hl2dhg xt0b8zv x8t9es0 x1fvot60 xxio538 xjnfcd9 xq9mrsl x1yc453h x1h4wwuj x1fcty0u']")[-1].get_attribute("href").split("/")[-1]
+    except:
+        account.nickname = "@"
+    try:
+        account.image = driver.find_element(By.XPATH, "//img[@class='xl1xv1r x78zum5 x193iq5w x1us19tq xkrh0ho x1aqa79q x10btfu9 x1e152vy']").get_attribute("src")
+    except:
+        account.image = "#"
     print(f"To Parse: {account.name}, {account.nickname}")
     footer = driver.find_element(By.XPATH, "//div[@class='xq4jnbd x78zum5 xdt5ytf xr1yuqi xkrivgy x4ii5y1 x1gryazu "
                                            "x1dr75xp xz9dl7a']")
@@ -74,7 +82,12 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
     count = 0
     while True:
         # get content
-        page_content = driver.find_elements(By.XPATH, "//div[@class='_7jvw x2izyaf x1hq5gj4 x1d52u69']")
+        try:
+            page_content = driver.find_elements(By.XPATH, "//div[@class='_7jvw x2izyaf x1hq5gj4 x1d52u69']")
+        except:
+            time.sleep(3)
+            page_content = driver.find_elements(By.XPATH, "//div[@class='_7jvw x2izyaf x1hq5gj4 x1d52u69']")
+
         if last_len == len(page_content):
             count += 1
         else:
@@ -113,12 +126,33 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
         record_to_update.account_activeAds = account.active_ads
         db_sess.commit()
         print(f"Account {account.name} already exists")
-
+    db_sess.close()
     db_sess = db_session.create_session()
     old_ads_id = db_sess.query(Advertisements.ad_id_another).all()
     old_ads_id = [ad[0] for ad in old_ads_id]
     for ad in account.ads:
-        if int(ad.id) not in old_ads_id:
+        if int(ad.id) in old_ads_id:
+            old_ad = db_sess.query(Advertisements).filter(Advertisements.ad_id_another == ad.id).first()
+            old_ad_status = old_ad.ad_status
+            if ad.status != old_ad_status:
+                db_sess.delete(old_ad)
+                api_ads = Advertisements()
+                api_ads.ad_id_another = ad.id
+                api_ads.ad_image = ad.image
+                api_ads.ad_text = ad.text
+                api_ads.ad_start_date = ad.start_date
+                api_ads.ad_end_date = ad.end_date
+                api_ads.ad_status = ad.status
+                api_ads.ad_buttonStatus = ad.buttonText
+                api_ads.ad_daysActive = ad.duration
+                api_ads.ad_mediaType = ad.media_type
+                api_ads.ad_landingLink = ad.landing
+                api_ads.ad_downloadLink = ad.download
+                api_ads.ad_platform = ad.platforms
+                api_ads.account_id = account.id
+                db_sess.add(api_ads)
+
+        elif int(ad.id) not in old_ads_id:
             api_ads = Advertisements()
             api_ads.ad_id_another = ad.id
             api_ads.ad_image = ad.image
@@ -136,5 +170,6 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
             db_sess.add(api_ads)
 
     db_sess.commit()
+    db_sess.close()
     requests.post(f"{ip}/refresh")
     print(f"Account {account.name} in database, refresh page")

@@ -16,7 +16,7 @@ var installForm = document.getElementById("install-media-form");
 var installBtn = document.getElementById("install-media-btn");
 
 
-var socket = io.connect('http://127.0.0.1:5000');
+var socket = io.connect('http://178.253.42.233:5000');
 var params = new URLSearchParams(window.location.search);
 var pageId = params.get('account_id');
 var adStatus = params.get('ad_status')
@@ -41,8 +41,9 @@ function disableButton() {
 
 window.addEventListener("load", function() {
     var acc_name = document.getElementById("download-media-form__wrapper").getAttribute("data-acc-name");
-    var checker_url = "http://127.0.0.1:8800/check_fully_download/" + acc_name + "?ad_status=" + adStatus
+    var checker_url = "http://178.253.42.233:8800/check_fully_download/" + acc_name + "?ad_status=" + adStatus
     function pollProgramStatusSt() {
+
             $.get(checker_url, function(data) {
                 var status = data.status;
                 var acc_name = document.getElementById("download-media-form__wrapper").getAttribute("data-acc-name");
@@ -109,9 +110,10 @@ document.addEventListener("DOMContentLoaded", function() {
     if (mediaProcess === "active") {
         var acc_name = document.getElementById("download-media-form__wrapper").getAttribute("data-acc-name");
 
-        var checker_url = "http://127.0.0.1:8800/check_fully_download/" + acc_name + "?ad_status=" + adStatus
+        var checker_url = "http://178.253.42.233:8800/check_fully_download/" + acc_name + "?ad_status=" + adStatus
         typeText()
         function pollProgramStatus() {
+
             $.get(checker_url, function(data) {
                 var status = data.status;
                 var acc_name = document.getElementById("download-media-form__wrapper").getAttribute("data-acc-name");
