@@ -24,7 +24,7 @@ app = Flask(__name__)
 CORS(app)
 scheduler = BackgroundScheduler()
 app.config['SECRET_KEY'] = "NikitinPlaxin31524011"
-app.config['BACKEND_IP'] = "http://127.0.0.1:5000"
+app.config['BACKEND_IP'] = "http://178.253.42.233:5000"
 
 
 @app.route('/delete_job/<int:id>', methods=["POST"])
@@ -51,6 +51,7 @@ def install_media(account_id):
             for image_url, ad_id_another, media_type in download_links:
                 try:
                     response = requests.get(image_url)
+
                     if response.status_code == 200:
                         image_data = response.content
                         if "Video" in media_type:
@@ -93,7 +94,6 @@ def install_media(account_id):
 @app.route("/delete_media/<string:account_name>", methods=["POST", "GET"])
 def delete_media(account_name):
     try:
-        print(account_name)
         ad_status = request.args.get("ad_status")
         if ad_status == "active":
             os.unlink(f"media_zips/{account_name}_active_media.zip")
@@ -115,7 +115,9 @@ def check_fully_download(account_name):
         file_path = f"media_zips/{account_name}_inactive_media.zip"
         file_exists = os.path.exists(file_path)
         print(file_exists)
-    return jsonify({"status": file_exists})
+    response = jsonify({"status": file_exists})
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 
 @app.route('/add_new_account/<int:id>/<string:platform>/<string:media>', methods=["POST"])
@@ -155,7 +157,7 @@ def main():
     db_session.global_init("databases/accounts.db")
     scheduler.start()
     restart_all_job()
-    app.run(host="127.0.0.1", port=8800, debug=True)
+    app.run(host="178.253.42.233", port=8800, debug=True)
 
 
 if __name__ == '__main__':

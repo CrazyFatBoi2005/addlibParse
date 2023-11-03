@@ -30,7 +30,7 @@
                     <div class="page-btns">
                         <button class="filter-btn" id="open-filter">Filter Ads</button>
                         <form method="post" action="{{ url_for('install_media', account_id=account_id, account_name=account_name, ad_status=ad_status)}}" id="install-media-form">
-                            <button class="install-media-btn" id="install-media-btn">Install Media</button>
+                            <button class="install-media-btn" id="install-media-btn">Save Media</button>
                         </form>
                         <form  method="post" action="{{ url_for('download_csv', account_id=account_id, filtered=filtered, ad_status=ad_status)}}">
                             <button class="download-csv-btn">Download CSV</button>

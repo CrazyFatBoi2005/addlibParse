@@ -6,6 +6,7 @@ import os
 import requests
 import socketio
 from flask import Flask, render_template, redirect, request, url_for, Response, session, send_file
+from flask_cors import CORS
 from flask_socketio import SocketIO
 
 from data import db_session
@@ -24,6 +25,7 @@ app.config['API_IP'] = "http://127.0.0.1:8800"
 socketio = SocketIO(app)
 
 
+
 @app.route('/', methods=["GET", "POST"])
 @app.route('/index', methods=["GET", "POST"])
 def index():
@@ -31,6 +33,7 @@ def index():
     accounts = db_sess.query(Account).all()
     accounts_count = len(accounts)
     ad_status = "active"
+    db_sess.close()
     return render_template("main.html", accounts=accounts, accounts_count=accounts_count, ad_status=ad_status)
 
 
@@ -45,6 +48,7 @@ def ads():
     account_name, adlib_account_link = db_sess.query(Account.account_name, Account.adlib_account_link).filter(Account.acc_id == account_id).first()
     ads_count = len(ads)
     cur_date = str(datetime.date.today())
+    db_sess.close()
     return render_template("page.html", ads=ads, ads_count=ads_count, cur_date=cur_date, account_id=account_id,
                            account_name=account_name,
                            adlib_account_link=adlib_account_link, filtered=filtered, ad_status=ad_status)
@@ -60,6 +64,7 @@ def inactive_ads():
     account_name, adlib_account_link = db_sess.query(Account.account_name, Account.adlib_account_link).filter(Account.acc_id == account_id).first()
     ads_count = len(ads)
     cur_date = str(datetime.date.today())
+    db_sess.close()
     return render_template("page_inactive.html", ads=ads, ads_count=ads_count, cur_date=cur_date, account_id=account_id,
                            account_name=account_name,
                            adlib_account_link=adlib_account_link, ad_status=ad_status)
@@ -79,6 +84,7 @@ def add_new_page():
     media_type = form.get("media")
     db_sess = db_session.create_session()
     acc_id = db_sess.query(Account).filter(Account.acc_id == id).first()
+    db_sess.close()
     if acc_id is None:
         requests.post(f"{app.config.get('API_IP')}/add_new_account/{id}/{platforms}/{media_type}")
         return "", 204
@@ -99,7 +105,7 @@ def delete_page(account_id):
     for ad in ads:
         db_sess.delete(ad)
     db_sess.commit()
-
+    db_sess.close()
     requests.post(f"{app.config.get('API_IP')}/delete_job/{account_id}")
     return redirect(f"/index")
 
@@ -187,7 +193,7 @@ def filter_ads():
 
     cur_date = str(datetime.date.today())
     account_name, adlib_account_link = db_sess.query(Account.account_name, Account.adlib_account_link).filter(Account.acc_id == account_id).first()
-
+    db_sess.close()
     return render_template("page.html", ads=filtered_ads,
                            ads_count=ads_count, cur_date=cur_date,
                            account_id=account_id, account_name=account_name,
@@ -240,7 +246,7 @@ def download_csv():
     content_type = 'text/csv'
     response = Response(csv_data, content_type=content_type)
     response.headers['Content-Disposition'] = f'attachment; filename={filename}.csv'
-
+    db_sess.close()
     return response
 
 
@@ -297,7 +303,7 @@ def download_certain_media():
                       Advertisements.ad_mediaType).filter(Advertisements.ad_id_another == image_id)[0]
 
     response = requests.get(image_download_link)
-
+    db_sess.close()
     if response.status_code == 200:
         image_data = response.content
         if image_media_type == "Image":
