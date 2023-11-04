@@ -1,5 +1,6 @@
 body {
     font-family: sans-serif;
+    margin-bottom: 120px;
 }
 
 .no-margins {
@@ -66,6 +67,7 @@ body {
     border: 1px #EAECF0 solid;
     box-sizing: border-box;
     border-radius: 10px;
+    cursor: move;
 
 }
 
@@ -327,9 +329,13 @@ body {
     line-height: 20px;
     letter-spacing: 0em;
     text-align: left;
-    color: #6941C6;
+    color: black;
     text-decoration: none;
 
+}
+
+.back-to-pages-in {
+    color: #6941C6;
 }
 
 .go-to-inactive {
@@ -351,24 +357,25 @@ body {
 }
 
 .page-btns {
-    width: 400px;
+    width: 490px;
     display: flex;
     justify-content: space-between;
     height: min-content;
+    align-items: center;
 }
 
 .filter-btn {
     background: none;
-    border: none;
-
+    cursor: pointer;
     font-size: 14px;
     font-weight: 400;
     line-height: 20px;
     letter-spacing: 0em;
     text-align: left;
     padding: 10px 16px;
-    color: #6941C6;
-    cursor: pointer;
+    border: 1px #EAECF0 solid;
+    border-radius: 8px;
+    color: black;
 }
 
 
@@ -689,4 +696,8 @@ display: flex;
     color: #6941C6;
     font-size: 14px;
     cursor: pointer;
+}
+
+.selected {
+  opacity: 1;
 }

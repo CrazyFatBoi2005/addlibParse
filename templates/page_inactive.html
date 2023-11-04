@@ -19,8 +19,7 @@
                 <div class="add-new-page__form-main">
                     <div class="with-back-btn-wrapper">
                         <div style="display: flex; width: 180px; justify-content: space-between;">
-                            <a href="/" class="back-to-pages">Home page</a>
-                            <a href="{{url_for('ads', account_id=account_id, ad_status='active')}}" class="back-to-pages">Active ads</a>
+                            <a href="/" class="back-to-pages">← Go back</a>
                         </div>
                         <div class="add-new-page__wrapper add-new-page__wrapper-page">
                             <h3 class="no-margins ad-pages-text">{{account_name}}</h3>
@@ -28,6 +27,7 @@
                         </div>
                     </div>
                     <div class="page-btns">
+                        <a href="{{url_for('ads', account_id=account_id, ad_status='active')}}" class="back-to-pages back-to-pages-in">Go to active ads</a>
                         <button class="filter-btn" id="open-filter">Filter Ads</button>
                         <form method="post" action="{{ url_for('install_media', account_id=account_id, account_name=account_name, ad_status=ad_status)}}" id="install-media-form">
                             <button class="install-media-btn" id="install-media-btn">Install Media</button>

@@ -35,9 +35,10 @@
                     </li>
                     {% for item in accounts %}
                     <li class="pages-content__content-item">
-                        <a href="{{url_for('ads', account_id=item.acc_id, ad_status=ad_status)}}"  class="pages-content__content-item-link">
-                            <div class="content-item-describer">
-                                <img src="{{item.account_image}}" alt="" width="40" height="40">
+                        <a href="{{url_for('ads', account_id=item.acc_id, ad_status=ad_status)}}"  class="pages-content__content-item-link"
+                        draggable="false">
+                            <div class="content-item-describer" draggable="false">
+                                <img src="{{item.account_image}}" alt="" width="40" height="40" draggable="false">
                                 <div class="page-user-naming__wrapper">
                                     <h4 class="channel_name no-margins">{{item.account_name}}</h4>
                                     <p class="channel_nickname no-margins">{{item.account_username}}</p>
@@ -131,6 +132,8 @@
         </div>
     </section>
     <script src="../static/js/script.js"></script>
+    <script src="../static/js/script_move.js"></script>
+
 </body>
 
 </html>

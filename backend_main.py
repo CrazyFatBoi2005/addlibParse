@@ -8,6 +8,7 @@ import socketio
 from flask import Flask, render_template, redirect, request, url_for, Response, session, send_file
 from flask_cors import CORS
 from flask_socketio import SocketIO
+from sqlalchemy import desc
 
 from data import db_session
 from data.accounts import Account
@@ -21,9 +22,8 @@ from requests_futures.sessions import FuturesSession
 app = Flask(__name__)
 session_ = FuturesSession()
 app.config['SECRET_KEY'] = "NikitinPlaxin315240"
-app.config['API_IP'] = "http://178.253.42.233:8800"
+app.config['API_IP'] = "http://178.253.42.33:8800"
 socketio = SocketIO(app)
-
 
 
 @app.route('/', methods=["GET", "POST"])
@@ -44,7 +44,8 @@ def ads():
     account_id = request.args.get("account_id")
     db_sess = db_session.create_session()
     ads = db_sess.query(Advertisements).filter(Advertisements.account_id == account_id,
-                                               Advertisements.ad_status == "Active").all()
+                                               Advertisements.ad_status ==
+                                               "Active").order_by(desc(Advertisements.ad_daysActive)).all()
     account_name, adlib_account_link = db_sess.query(Account.account_name, Account.adlib_account_link).filter(Account.acc_id == account_id).first()
     ads_count = len(ads)
     cur_date = str(datetime.date.today())
@@ -330,7 +331,7 @@ def refresh():
 def main():
     db_session.global_init("databases/accounts.db")
 
-    socketio.run(app, host="178.253.42.233", debug=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, host="178.253.42.33", debug=True, allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':
