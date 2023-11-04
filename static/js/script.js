@@ -27,7 +27,7 @@ closeModalNotif.addEventListener('click', () => {
 });
 
 
-var socket = io.connect('http://178.253.42.33:5000');
+var socket = io.connect('http://178.253.42.233:5000');
 
 socket.on('data_updated', function(data) {
     location.reload()
