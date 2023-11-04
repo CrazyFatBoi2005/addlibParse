@@ -53,10 +53,10 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
           f"&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&search_type=page&media_type=all "
     account = Account(url)
     options = Options()
-    # options.add_argument("--headless")
-    # profile_directory = r'%AppData%\Mozilla\Firefox\Profiles\42ryon9o.adParseProf'
-    # profile = webdriver.FirefoxProfile(os.path.expandvars(profile_directory))
-    # options.profile = profile
+    options.add_argument("--headless")
+    profile_directory = r'%AppData%\Mozilla\Firefox\Profiles\42ryon9o.adParseProf'
+    profile = webdriver.FirefoxProfile(os.path.expandvars(profile_directory))
+    options.profile = profile
     driver = webdriver.Firefox(options=options)
     driver.get(url_with_filters)
     try:
