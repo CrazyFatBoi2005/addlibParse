@@ -22,7 +22,7 @@ from requests_futures.sessions import FuturesSession
 app = Flask(__name__)
 session_ = FuturesSession()
 app.config['SECRET_KEY'] = "NikitinPlaxin315240"
-app.config['API_IP'] = "http://178.253.42.33:8800"
+app.config['API_IP'] = "http://178.253.42.233:8800"
 socketio = SocketIO(app)
 
 
@@ -331,7 +331,7 @@ def refresh():
 def main():
     db_session.global_init("databases/accounts.db")
 
-    socketio.run(app, host="178.253.42.33", debug=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, host="178.253.42.233", debug=True, allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':
