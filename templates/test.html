@@ -2,33 +2,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <link href="../static/css/style.css" rel="stylesheet">
 </head>
 <body>
 
-<h2>Асинхронная загрузка файла</h2>
+<section class="tasks">
+  <h1 class="tasks__title">To do list</h1>
 
-<button type="button" onclick="loadDoc()">Загрузить файл</button>
-
-<script>
-function loadDoc() {
-  $.ajax({
-    url: '/download_media',  // URL вашего API
-    method: 'GET',
-    xhrFields: {
-      responseType: 'blob'
-    },
-    success: function (data) {
-      var a = document.createElement('a');
-      var url = window.URL.createObjectURL(data);
-      a.href = url;
-      a.download = 'zipfile.zip';
-      a.click();
-      window.URL.revokeObjectURL(url);
-    }
-  });
-}
-</script>
-
+  <ul class="tasks__list" ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
+    <li class="tasks__item" draggable="true" ondragstart="handleDragStart(event)">learn HTML</li>
+    <li class="tasks__item" draggable="true" ondragstart="handleDragStart(event)">learn CSS</li>
+    <li class="tasks__item" draggable="true" ondragstart="handleDragStart(event)">learn JavaScript</li>
+    <li class="tasks__item" draggable="true" ondragstart="handleDragStart(event)">learn PHP</li>
+    <li class="tasks__item" draggable="true" ondragstart="handleDragStart(event)">stay alive</li>
+  </ul>
+</section>
+<script src="../static/js/test.js"></script>
 </body>
 </html>
