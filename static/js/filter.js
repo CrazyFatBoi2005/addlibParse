@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (mediaProcess === "active") {
         var acc_name = document.getElementById("download-media-form__wrapper").getAttribute("data-acc-name");
 
-        var checker_url = "http://178.253.42.233:8800/check_fully_download/" + acc_name + "?ad_status=" + adStatus
+        var checker_url = "http://178.253.42.233remove:8800/check_fully_download/" + acc_name + "?ad_status=" + adStatus
         typeText()
         function pollProgramStatus() {
 

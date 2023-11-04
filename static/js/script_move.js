@@ -3,10 +3,12 @@ const taskElements = tasksListElement.querySelectorAll(".pages-content__content-
 
 
 document.addEventListener('DOMContentLoaded', function() {
-
     var tasksList = localStorage.getItem("tasksList");
     if (tasksList) {
         document.querySelector(".pages-content__content-list").innerHTML = tasksList;
+    }
+    for (const task of taskElements) {
+        task.classList.remove("selected");
     }
 });
 
@@ -29,6 +31,7 @@ tasksListElement.addEventListener("dragover", (evt) => {
 
   const activeElement = tasksListElement.querySelector(".selected");
   const currentElement = evt.target;
+
   const isMoveable = activeElement !== currentElement &&
     currentElement.classList.contains("pages-content__content-item");
 
@@ -36,30 +39,11 @@ tasksListElement.addEventListener("dragover", (evt) => {
     return;
   }
 
-  const nextElement = getNextElement(evt.clientY, currentElement);
-
-  if (
-    nextElement &&
-    activeElement === nextElement.previousElementSibling ||
-    activeElement === nextElement
-  ) {
-    return;
-  }
+  const nextElement = (currentElement === activeElement.nextElementSibling) ?
+      currentElement.nextElementSibling :
+      currentElement;
 
   tasksListElement.insertBefore(activeElement, nextElement);
   var tasksList = document.querySelector(".pages-content__content-list").innerHTML;
   localStorage.setItem("tasksList", tasksList);
 });
-
-
-
-const getNextElement = (cursorPosition, currentElement) => {
-  const currentElementCoord = currentElement.getBoundingClientRect();
-  const currentElementCenter = currentElementCoord.y + currentElementCoord.height / 2;
-
-  const nextElement = (cursorPosition < currentElementCenter) ?
-      currentElement :
-      currentElement.nextElementSibling;
-
-  return nextElement;
-};
