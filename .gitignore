@@ -164,3 +164,6 @@ databases/accounts.db
 *.iml
 .idea/addlibParse.iml
 .idea/misc.xml
+*.xml
+*.iml
+*.iml
