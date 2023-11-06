@@ -24,7 +24,7 @@ app = Flask(__name__)
 CORS(app)
 scheduler = BackgroundScheduler()
 app.config['SECRET_KEY'] = "NikitinPlaxin31524011"
-app.config['BACKEND_IP'] = "http://178.253.42.233:5000"
+app.config['BACKEND_IP'] = "http://127.0.0.1:5000"
 
 
 @app.route('/delete_job/<int:id>', methods=["POST"])
@@ -120,19 +120,26 @@ def check_fully_download(account_name):
     return response
 
 
-@app.route('/add_new_account/<int:id>/<string:platform>/<string:media>', methods=["POST"])
-def add_new_account(id, platform, media):
-    process = mp.Process(target=parse_page, args=(id, platform, media, app.config.get('BACKEND_IP')))
+@app.route('/add_new_account/<int:id>/<string:platform>/<string:media>/<int:group_id>', methods=["POST"])
+def add_new_account(id, platform, media, group_id):
+    process = mp.Process(target=parse_page, args=(id, group_id, platform, media, app.config.get('BACKEND_IP')))
     process.start()
-    scheduler.add_job(func=update_data, args=(id, platform, media, app.config.get('BACKEND_IP'), None), id=str(id),
+    scheduler.add_job(func=update_data, args=(id, platform, media, app.config.get('BACKEND_IP'), None, group_id),
+                      id=str(id),
                       trigger=IntervalTrigger(days=1))
     response = jsonify({"message": "OK"})
     response.status_code = 200
     return response
 
 
-def update_data(id, platform, media, ip, url):
-    process = mp.Process(target=parse_page, args=(id, platform, media, ip, url))
+@app.route('/restarting_jobs', methods=["POST"])
+def restarting_jobs():
+    restart_all_job()
+    return "", 204
+
+
+def update_data(id, platform, media, ip, url, group_id):
+    process = mp.Process(target=parse_page, args=(id, platform, media, ip, url, group_id))
     process.start()
 
 
@@ -148,7 +155,8 @@ def restart_all_job():
                                                         "url": job.url,
                                                         "ip": app.config.get('BACKEND_IP'),
                                                         "platform": None,
-                                                        "media": None}, id=str(job.account_id), trigger=trigger)
+                                                        "media": None,
+                                                        "group_id": None}, id=str(job.account_id), trigger=trigger)
         except ConflictingIdError:
             scheduler.resume_job(str(job.account_id))
 
@@ -157,7 +165,8 @@ def main():
     db_session.global_init("databases/accounts.db")
     scheduler.start()
     restart_all_job()
-    app.run(host="178.253.42.233", port=8800, debug=True)
+    print("job_rest")
+    app.run(host="127.0.0.1", port=8800, debug=True, use_reloader=False)
 
 
 if __name__ == '__main__':

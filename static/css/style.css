@@ -35,6 +35,10 @@ body {
     padding: 0;
 }
 
+.pages-content__content-list {
+    margin-top: 8px;
+}
+
 .pages-content__content-title,
 .ads-content__content-title {
     display: flex;
@@ -72,6 +76,10 @@ body {
 }
 
 .ads-content__content-item {
+    cursor: auto;
+}
+
+.ads-content__content-item {
     display: grid;
     grid-template-columns: 200px 460px 117px 200px 100px 100px 90px;
 }
@@ -88,10 +96,47 @@ body {
     justify-content: space-between;
 }
 
+.account-status-management__wrapper-label {
+    display: flex;
+    margin-left: 20px;
+}
+
+.account-status-management__wrapper-label::before {
+  content: " ";
+  color: #000;
+  display: flex;
+  margin-right: 15px;
+  position: relative;
+  text-align: center;
+  text-indent: 0px;
+  width: 17px;
+  height: 17px;
+  background: #FFF;
+  border: 1px solid black;
+  vertical-align: middle;
+  margin-top: auto;
+  margin-bottom: auto;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.tracking-status-checkbox:checked + .account-status-management__wrapper-label::before {
+    background: url("../images/ok.png") no-repeat;
+    background-size: 15px 15px;
+    background-position: center;
+
+}
+
+.tracking-status-checkbox:disabled + .account-status-management__wrapper-label::before {
+    border: 1px solid black;
+    opacity: 0.5;
+
+}
+
 .content-item-describer {
     display: flex;
-    width: 498px;
-    margin-left: 30px;
+    width: 468px;
+    margin-left: 8px;
     font-size: 15px;
     font-weight: 500;
     line-height: 18px;
@@ -99,6 +144,10 @@ body {
     text-align: left;
     align-items: center;
 
+}
+
+.tracking-status-checkbox {
+    display: none;
 }
 
 .name-characteristics {
@@ -151,6 +200,16 @@ body {
 .ad-pages-text {
 
 
+    font-size: 25px;
+    font-weight: 600;
+    line-height: 28px;
+    letter-spacing: 0em;
+    text-align: left;
+}
+
+.ad-groups-text {
+
+
     font-size: 18px;
     font-weight: 600;
     line-height: 28px;
@@ -181,6 +240,31 @@ body {
     border: none;
     border-radius: 10px;
     cursor: pointer;
+    margin-right: 20px;
+}
+
+.change-accounts-status-btn, .save-accounts-status-btn, .changes-success-btn {
+
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 12px;
+    letter-spacing: 0em;
+    color: white;
+    background-color: #6941C6;
+    padding: 10px 16px 10px 16px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-right: 20px;
+}
+
+.changes-success-btn {
+    width: 200px;
+    margin-bottom: 20px;
+}
+
+.save-accounts-status-btn {
+    display: none;
 }
 
 .characteristics-text {
@@ -241,6 +325,13 @@ body {
     margin: auto;
 }
 
+.changes-success-modal-wrapper {
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .add-new-page__form-main {
     display: flex;
     justify-content: space-between;
@@ -278,6 +369,14 @@ body {
     margin-left: 24px;
 }
 
+
+.group-wrapper {
+    display: flex;
+    flex-direction: column;
+    margin-left: 24px;
+}
+
+
 .page-url-field {
     width: 625px;
     padding: 10px 14px;
@@ -288,10 +387,9 @@ body {
 
 .options-list {
     list-style: none;
-    margin-left: -10px;
-    width: 450px;
+    padding: 0;
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
 }
 
 .options-item {
@@ -309,6 +407,18 @@ body {
 }
 
 .options-add-new-page-btn {
+    color: white;
+    background: #6941C6;
+    width: 540px;
+    margin: auto;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-top: 32px;
+    margin-bottom: 24px;
+}
+
+.options-add-new-group-btn {
     color: white;
     background: #6941C6;
     width: 540px;
@@ -566,10 +676,15 @@ body {
 
 .ads-options-list {
     width: 650px;
+    margin-left: 16px;
 }
 
 .options-item-days {
     width: 150px;
+}
+
+.pages-content__content {
+    margin-top: 30px;
 }
 
 .pages-content__content-item-link {
@@ -599,7 +714,13 @@ body {
     cursor: pointer;
 }
 
-.modal {
+.edit-channel-btn {
+    all: unset;
+    cursor: pointer;
+    margin-top: -3px;
+}
+
+.modal, .account-added-modal  {
     display: none;
     position: fixed;
     border: 3px #6941C6 dashed;
@@ -652,10 +773,6 @@ download-modal {
     animation-name: disap;
 }
 
-.removed {
-    display: none;
-}
-
 @keyframes disap {
   from {
     display: block
@@ -670,6 +787,11 @@ download-modal {
 
 .modal-content {
     text-align: center;
+}
+
+.account-added-modal-content {
+    text-align: center;
+    width: 200px;
 }
 
 .close {
@@ -700,4 +822,204 @@ display: flex;
 
 .selected {
   opacity: 1;
+}
+
+.groups-nav-wrapper {
+    display: flex;
+    justify-content: space-between;
+    width: 110px;
+
+}
+
+.groups-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(8, auto);
+    grid-gap: 30px;
+    margin: 20px 0 20px 20px;
+    padding: 0;
+    }
+
+.groups-item {
+    word-break: break-all;
+}
+
+.groups-pages {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #EAECF0;
+    border-radius: 9px;
+    margin-top: 20px;
+}
+
+.groups-link-active {
+    color: #000;
+}
+
+.group-link {
+    color: #6941C6;
+    text-decoration: none;
+    font-size: 15px;
+}
+
+.back-to-groups-link {
+    text-decoration: none;
+    margin-bottom: 12px;
+    display: block;
+}
+
+.delete-group-btn {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 12px;
+    letter-spacing: 0em;
+    color: white;
+    background-color: red;
+    padding: 10px 16px 10px 16px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-right: 20px;
+}
+
+.add-new-group-btn {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 12px;
+    letter-spacing: 0em;
+    color: white;
+    background-color: #6941C6;
+    padding: 10px 16px 10px 16px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-right: 20px;
+}
+
+.group-manage-buttons {
+    display: flex;
+}
+
+.modal__delete-group {
+    display: none;
+    position: fixed;
+    overflow: auto;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.delete-group__form {
+    display: flex;
+    flex-direction: column;
+}
+
+.delete-group-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.delete-group-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.delete-group-select{
+    padding: 10px 14px;
+    border: 1px #D0D5DD solid;
+    border-radius: 10px;
+    margin-top: 7px;
+    color: #101828;
+    font-weight: 550;
+}
+
+.delete-modal__message-wrapper {
+    display: flex;
+    width: 400px;
+    justify-content: space-between;
+    margin-left: 30px;
+}
+
+.delete-modal__del-anyway-btn {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 12px;
+    letter-spacing: 0em;
+    color: white;
+    background-color: red;
+    padding: 10px 16px 10px 16px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-right: 20px;
+}
+
+.delete-modal__save-changes-btn {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 12px;
+    letter-spacing: 0em;
+    color: white;
+    background-color: #6941C6;
+    padding: 10px 16px 10px 16px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-right: 20px;
+}
+
+.save-change-group-account {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 12px;
+    letter-spacing: 0em;
+    color: white;
+    background-color: #6941C6;
+    padding: 10px 16px 10px 16px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-right: 20px;
+    width: 200px;
+}
+
+.delete-modal__manage-btns-wrapper {
+    display: flex;
+    width: 500px;
+    justify-content: flex-start;
+    margin: 30px auto 30px 30px;
+}
+
+.change-group__form {
+    display: flex;
+    flex-direction: column;
+}
+
+.change-group-modal__message-wrapper {
+    display: flex;
+    width: 250px;
+    justify-content: space-between;
+    margin-left: 30px;
+}
+
+.change-group-select {
+    padding: 10px 14px;
+    border: 1px #D0D5DD solid;
+    border-radius: 10px;
+    margin-top: 7px;
+    color: #101828;
+    font-weight: 550;
+}
+
+.go-to-curr-group-id-link {
+    text-decoration: none;
+    color: #6941C6;
+}
+
+.removed {
+    display: none;
 }

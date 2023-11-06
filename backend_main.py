@@ -5,13 +5,14 @@ import os
 
 import requests
 import socketio
-from flask import Flask, render_template, redirect, request, url_for, Response, session, send_file
+from flask import Flask, render_template, redirect, request, url_for, Response, session, send_file, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO
 from sqlalchemy import desc
 
 from data import db_session
 from data.accounts import Account
+from data.groups import Group
 from data.advertisement import Advertisements
 from data.jobqueue import Job
 
@@ -22,7 +23,7 @@ from requests_futures.sessions import FuturesSession
 app = Flask(__name__)
 session_ = FuturesSession()
 app.config['SECRET_KEY'] = "NikitinPlaxin315240"
-app.config['API_IP'] = "http://178.253.42.233:8800"
+app.config['API_IP'] = "http://127.0.0.1:8800"
 socketio = SocketIO(app)
 
 
@@ -30,11 +31,177 @@ socketio = SocketIO(app)
 @app.route('/index', methods=["GET", "POST"])
 def index():
     db_sess = db_session.create_session()
-    accounts = db_sess.query(Account).all()
+    groups = db_sess.query(Group).all()
+    groups_count = len(groups)
+    current_group = ""
+    current_group_id = 0
+    accounts = db_sess.query(Account).filter(Account.group_id == 0).all()
     accounts_count = len(accounts)
     ad_status = "active"
     db_sess.close()
-    return render_template("main.html", accounts=accounts, accounts_count=accounts_count, ad_status=ad_status)
+    return render_template("main.html", ad_status=ad_status, groups=groups, groups_count=groups_count,
+                           current_group=current_group, accounts=accounts, accounts_count=accounts_count,
+                           current_group_id=0)
+
+
+@app.route('/<int:group_id>', methods=["GET", "POST"])
+@app.route('/index/<int:group_id>', methods=["GET", "POST"])
+def index_group(group_id):
+    db_sess = db_session.create_session()
+    groups = db_sess.query(Group).all()
+    current_group = db_sess.query(Group).filter(Group.id == group_id).first()
+    current_group_id = current_group.id
+    groups_count = len(groups)
+    accounts = db_sess.query(Account).filter(Account.group_id == group_id).all()
+    # accounts = db_sess.query(Account).all()
+    accounts_count = len(accounts)
+    ad_status = "active"
+    db_sess.close()
+    return render_template("main.html", ad_status=ad_status, groups=groups, groups_count=groups_count, accounts=accounts,
+                           accounts_count=accounts_count, current_group=current_group, current_group_id=current_group_id)
+
+
+@app.route('/add_new_group', methods=["POST"])
+def add_new_group():
+    form = request.form
+    group_name = form.get("group-name")
+    db_sess = db_session.create_session()
+    group_db = db_sess.query(Group).filter(Group.name == group_name).first()
+    if not group_db:
+        group = Group()
+        group.name = group_name
+        db_sess.add(group)
+        db_sess.commit()
+        group_id = db_sess.query(Group.id).filter(Group.name == group_name).first()[0]
+        db_sess.close()
+        return redirect(f"/index/{group_id}")
+    else:
+        return "", 204
+
+
+@app.route('/delete_group', methods=["POST"])
+def delete_group():
+    form = request.form
+    action = form['send-delete-form']
+    current_group_id = request.args.get("current_group_id")
+    current_group_id = int(current_group_id)
+
+    db_sess = db_session.create_session()
+
+    if action == 'button-save':
+        current_group_id = request.args.get("current_group_id")
+        group_name = form.get("group-name")
+        if group_name != "Default":
+            new_group_id = db_sess.query(Group.id).filter(Group.name == group_name).first()[0]
+            current_group_accounts = db_sess.query(Account).filter(Account.group_id == current_group_id).all()
+            for acc in current_group_accounts:
+                acc.group_id = new_group_id
+            current_group = db_sess.query(Group).filter(Group.id == current_group_id).first()
+            db_sess.delete(current_group)
+            db_sess.commit()
+            return redirect(f"/{new_group_id}")
+
+        else:
+            new_group_id = 0
+            current_group_accounts = db_sess.query(Account).filter(Account.group_id == current_group_id).all()
+            for acc in current_group_accounts:
+                acc.group_id = new_group_id
+            current_group = db_sess.query(Group).filter(Group.id == current_group_id).first()
+            db_sess.delete(current_group)
+            db_sess.commit()
+            db_sess.close()
+            return redirect(f"/")
+    elif action == 'button-delete':
+        current_group_accounts = db_sess.query(Account).filter(Account.group_id == current_group_id).all()
+        for acc in current_group_accounts:
+            db_sess.delete(acc)
+        current_group = db_sess.query(Group).filter(Group.id == current_group_id).first()
+        db_sess.delete(current_group)
+        db_sess.commit()
+        db_sess.close()
+        return redirect(f"/")
+
+
+@app.route('/change_account_group', methods=["POST"])
+def change_account_group():
+    form = request.form
+    account_id = form.get("accountIdField")
+    account_id = int(account_id)
+    group_name = form.get("group-name")
+    db_sess = db_session.create_session()
+    if group_name != "Default":
+        new_group_id = db_sess.query(Group.id).filter(Group.name == group_name).first()[0]
+    else:
+        new_group_id = 0
+
+    current_account = db_sess.query(Account).filter(Account.acc_id == account_id).first()
+    current_account.group_id = new_group_id
+    db_sess.commit()
+    db_sess.close()
+    if new_group_id != 0:
+        return redirect(f"/{new_group_id}")
+    return redirect("/")
+
+
+@app.route('/change_accounts_status', methods=["POST"])
+def change_accounts_status():
+    checkbox_statuses = request.get_json()
+    checkbox_statuses = dict(checkbox_statuses)
+    current_group_id = checkbox_statuses["currentGroupId"]
+    db_sess = db_session.create_session()
+    accounts = db_sess.query(Account).filter(Account.group_id == current_group_id).all()
+    for account in accounts:
+        account_checkbox_status = checkbox_statuses[f"checkbox-{account.acc_id}"]
+        print(account_checkbox_status)
+        if account_checkbox_status:
+            account.account_is_tracked = 1
+            account_job = db_sess.query(Job).filter(Job.account_id == account.acc_id).first()
+            print(account_job)
+            if not account_job:
+                new_job = Job()
+                new_job.account_id = account.acc_id
+                new_job.url = account.adlib_account_link
+                new_job.time = datetime.datetime.now().strftime("%H:%M:%S")
+                db_sess.add(new_job)
+            else:
+                print("everything ok!")
+        else:
+            account.account_is_tracked = 0
+            account_job = db_sess.query(Job).filter(Job.account_id == account.acc_id).first()
+            db_sess.delete(account_job)
+    db_sess.commit()
+    db_sess.close()
+    requests.post(f"{app.config.get('API_IP')}/restarting_jobs")
+    return ""
+
+
+@app.route('/add_new_page', methods=["POST"])
+def add_new_page():
+    form = request.form
+    url = form.get("account-link")
+    url = url.strip()
+
+    id = url[url.find("view_all_page_id=") + len("view_all_page_id="):url.find("&search_type")]
+    if not id.isdigit():
+        id = url[url.find("view_all_page_id=") + len("view_all_page_id="):url.find("&sort_data")]
+    platforms = form.get("platform")
+    media_type = form.get("media")
+    group_name = form.get("group")
+    db_sess = db_session.create_session()
+    account = db_sess.query(Account).filter(Account.acc_id == id).first()
+    if group_name != "Default":
+        group_id = db_sess.query(Group.id).filter(Group.name == group_name).first()[0]
+    else:
+        group_id = 0
+
+    db_sess.close()
+    if account is None:
+        requests.post(f"{app.config.get('API_IP')}/add_new_account/{id}/{platforms}/{media_type}/{group_id}")
+        return "", 204
+
+    else:
+        socketio.emit("show_modal", "OK:200")
+        return "", 204
 
 
 @app.route('/ads', methods=["GET", "POST"])
@@ -47,6 +214,7 @@ def ads():
                                                Advertisements.ad_status ==
                                                "Active").order_by(desc(Advertisements.ad_daysActive)).all()
     account_name, adlib_account_link = db_sess.query(Account.account_name, Account.adlib_account_link).filter(Account.acc_id == account_id).first()
+
     ads_count = len(ads)
     cur_date = str(datetime.date.today())
     db_sess.close()
@@ -71,30 +239,6 @@ def inactive_ads():
                            adlib_account_link=adlib_account_link, ad_status=ad_status)
 
 
-@app.route('/add_new_page', methods=["POST"])
-def add_new_page():
-    form = request.form
-    url = form.get("account-link")
-    url = url.strip()
-
-    id = url[url.find("view_all_page_id=") + len("view_all_page_id="):url.find("&search_type")]
-    if not id.isdigit():
-        id = url[url.find("view_all_page_id=") + len("view_all_page_id="):url.find("&sort_data")]
-    print(id)
-    platforms = form.get("platform")
-    media_type = form.get("media")
-    db_sess = db_session.create_session()
-    acc_id = db_sess.query(Account).filter(Account.acc_id == id).first()
-    db_sess.close()
-    if acc_id is None:
-        requests.post(f"{app.config.get('API_IP')}/add_new_account/{id}/{platforms}/{media_type}")
-        return "", 204
-
-    else:
-        socketio.emit("show_modal", "OK:200")
-        return "", 204
-
-
 @app.route('/delete_page/<int:account_id>', methods=["POST"])
 def delete_page(account_id):
     db_sess = db_session.create_session()
@@ -107,8 +251,19 @@ def delete_page(account_id):
         db_sess.delete(ad)
     db_sess.commit()
     db_sess.close()
+    print(f"media_zips/{account.account_name}_active_media.zip")
+    print(os.path.exists(f"media_zips/{account.account_name}_active_media.zip"))
+    if os.path.exists(f"media_zips/{account.account_name}_active_media.zip"):
+        os.unlink(f"media_zips/{account.account_name}_active_media.zip")
+    else:
+        pass
+    if os.path.exists(f"media_zips/{account.account_name}_inactive_media.zip"):
+        os.unlink(f"media_zips/{account.account_name}_inactive_media.zip")
+    else:
+        pass
     requests.post(f"{app.config.get('API_IP')}/delete_job/{account_id}")
-    return redirect(f"/index")
+    socketio.emit('page_changed', account_id)
+    return "", 204
 
 
 def status1_filtration(db_sess, account_id, over_days):
@@ -322,16 +477,24 @@ def download_certain_media():
         )
 
 
-@app.route('/refresh', methods=["POST"])
-def refresh():
-    socketio.emit('data_updated', "OK:200")
+@app.route('/refresh/<int:group_id>', methods=["POST"])
+def refresh(group_id):
+    socketio.emit('data_updated', group_id)
     return "OK", 200
+
+
+@app.route('/receive_html', methods=['POST'])
+def receive_html():
+    received_data = request.get_json()
+
+    response_data = {'message': 'Список успешно получен и обработан'}
+    return jsonify(response_data)
 
 
 def main():
     db_session.global_init("databases/accounts.db")
 
-    socketio.run(app, host="178.253.42.233", debug=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, host="127.0.0.1", debug=True, allow_unsafe_werkzeug=True, use_reloader=False)
 
 
 if __name__ == '__main__':

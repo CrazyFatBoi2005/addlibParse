@@ -20,20 +20,11 @@
             <a href="/" class="back-to-groups-link">← Back to groups</a>
                 <div class="add-new-page__form-main">
                     <div class="add-new-page__wrapper">
-                        {% if current_group == "" %}
-                            <h3 class="no-margins ad-pages-text">Default group accounts</h3>
-                        {% else %}
-                            <h3 class="no-margins ad-pages-text">{{current_group.name}} accounts</h3>
-                        {% endif %}
+                        <h3 class="no-margins ad-pages-text">Default group accounts</h3>
                         <p class="no-margins pages-quantity-text">{{accounts_count}} accounts</p>
                     </div>
                     <div class="group-manage-buttons">
                     <button class="add-new-group-btn" id="open-group-modal">Add new group</button>
-                    {% if current_group != "" %}
-                        <button class="delete-group-btn" id="delete-group-btn">Delete Group</button>
-                    {% else %}
-                        <button style="display: none;" class="delete-group-btn" id="delete-group-btn">Delete Group</button>
-                    {% endif %}
                     </div>
                 </div>
             </section>
@@ -53,73 +44,59 @@
             </section>
 
             <section class="pages-content__content">
-                    <button class="change-accounts-status-btn" id="change-accounts-status-btn" type="button">Change tracking status</button>
-                    <ul class="pages-content__content-list">
-                        <li class="pages-content__content-title">
-                            <p class="name-characteristics characteristics-text">Name</p>
-                            <p class="total-characteristics characteristics-text">Total Ads</p>
-                            <p class="active-characteristics characteristics-text">Active Ads</p>
-                            <p class="link-characteristics characteristics-text">Fb Link</p>
-                            <div style="width: 75px;">
+                <ul class="pages-content__content-list">
+                    <li class="pages-content__content-title">
+                        <p class="name-characteristics characteristics-text">Name</p>
+                        <p class="total-characteristics characteristics-text">Total Ads</p>
+                        <p class="active-characteristics characteristics-text">Active Ads</p>
+                        <p class="link-characteristics characteristics-text">Fb Link</p>
+                        <div style="width: 75px;">
+                        </div>
+                    </li>
+                    {% for item in accounts %}
+                    <li class="pages-content__content-item" id="el_{{item.acc_id}}">
+                        <a href="{{url_for('ads', account_id=item.acc_id, ad_status=ad_status)}}"  class="pages-content__content-item-link"
+                        draggable="false">
+                            <div class="content-item-describer" draggable="false">
+                                <img src="{{item.account_image}}" alt="" width="40" height="40" draggable="false">
+                                <div class="page-user-naming__wrapper" draggable="false">
+                                    <h4 class="channel_name no-margins" draggable="false">{{item.account_name}}</h4>
+                                    <p class="channel_nickname no-margins" draggable="false">{{item.account_username}}</p>
+                                </div>
                             </div>
-                        </li>
-                        {% for item in accounts %}
-                        <li class="pages-content__content-item" id="el_{{item.acc_id}}">
-                            <div class="account-status-management__wrapper">
-                                {% if item.account_is_tracked == 1%}
-                                <input type="checkbox"
-                                       class="tracking-status-checkbox" id="checkbox-{{item.acc_id}}"
-                                       name="status-checkbox" disabled checked >
-                                {% else %}
-                                <input type="checkbox"
-                                       class="tracking-status-checkbox" id="checkbox-{{item.acc_id}}"
-                                       name="status-checkbox" disabled >
-                                {% endif %}
-                                <label class="account-status-management__wrapper-label" for="checkbox-{{item.acc_id}}">
-                                    <a href="{{url_for('ads', account_id=item.acc_id, ad_status=ad_status)}}" class="pages-content__content-item-link"
-                                    draggable="false">
-                                        <div class="content-item-describer" draggable="false">
-                                            <img src="{{item.account_image}}" alt="" width="40" height="40" draggable="false">
-                                            <div class="page-user-naming__wrapper" draggable="false">
-                                                <h4 class="channel_name no-margins" draggable="false">{{item.account_name}}</h4>
-                                                <p class="channel_nickname no-margins" draggable="false">{{item.account_username}}</p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </label>
-                            </div>
-                            <p class="channel-total-ads no-margins" draggable="false">{{item.account_totalAds}}</p>
-                            <p class="channel-active-ads no-margins" draggable="false">{{item.account_activeAds}}</p>
-                            <div class="channel-link-div" draggable="false">
-                                <a href="{{item.adlib_account_link}}" draggable="false" target="_blank" class="channel-link no-margins">Facebook Ads</a>
-                            </div>
-                            <div class="management-links" draggable="false">
-                                <form action="/delete_page/{{item.acc_id}}" method="post" class="delete-channel no-margins">
-                                    <button class="delete-button">
-                                    <svg width="18" height="20" viewBox="0 0 18 20" fill="none"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M12.3333 4.99999V4.33332C12.3333 3.3999 12.3333 2.93319 12.1517 2.57667C11.9919 2.26307 11.7369 2.0081 11.4233 1.84831C11.0668 1.66666 10.6001 1.66666 9.66667 1.66666H8.33333C7.39991 1.66666 6.9332 1.66666 6.57668 1.84831C6.26308 2.0081 6.00811 2.26307 5.84832 2.57667C5.66667 2.93319 5.66667 3.3999 5.66667 4.33332V4.99999M7.33333 9.58332V13.75M10.6667 9.58332V13.75M1.5 4.99999H16.5M14.8333 4.99999V14.3333C14.8333 15.7335 14.8333 16.4335 14.5608 16.9683C14.3212 17.4387 13.9387 17.8212 13.4683 18.0608C12.9335 18.3333 12.2335 18.3333 10.8333 18.3333H7.16667C5.76654 18.3333 5.06647 18.3333 4.53169 18.0608C4.06129 17.8212 3.67883 17.4387 3.43915 16.9683C3.16667 16.4335 3.16667 15.7335 3.16667 14.3333V4.99999"
-                                            stroke="#475467" stroke-width="1.66667" stroke-linecap="round"
-                                            stroke-linejoin="round" />
-                                    </svg>
-                                    </button>
-                                </form>
-                                <button class="edit-channel-btn" id="edit-channel-btn" data-variable="{{item.acc_id}}">
-                                    <svg width="17" height="17" viewBox="0 0 19 19" fill="none"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M1.39668 15.0964C1.43497 14.7518 1.45411 14.5795 1.50624 14.4185C1.55249 14.2756 1.61784 14.1396 1.70051 14.0142C1.79369 13.8729 1.91627 13.7504 2.16142 13.5052L13.1667 2.49999C14.0871 1.57951 15.5795 1.57951 16.5 2.49999C17.4205 3.42046 17.4205 4.91285 16.5 5.83332L5.49475 16.8386C5.2496 17.0837 5.12702 17.2063 4.98572 17.2995C4.86035 17.3821 4.72439 17.4475 4.58152 17.4937C4.42048 17.5459 4.24819 17.565 3.90362 17.6033L1.08331 17.9167L1.39668 15.0964Z"
-                                            stroke="#475467" stroke-width="1.66667" stroke-linecap="round"
-                                            stroke-linejoin="round" />
-                                    </svg>
+                        </a>
+                        <p class="channel-total-ads no-margins" draggable="false">{{item.account_totalAds}}</p>
+                        <p class="channel-active-ads no-margins" draggable="false">{{item.account_activeAds}}</p>
+                        <div class="channel-link-div" draggable="false">
+                            <a href="{{item.adlib_account_link}}" draggable="false" target="_blank" class="channel-link no-margins">Facebook Ads</a>
+                        </div>
+                        <div class="management-links" draggable="false">
+                            <form action="/delete_page/{{item.acc_id}}" method="post" class="delete-channel no-margins">
+                                <button class="delete-button">
+                                <svg width="18" height="20" viewBox="0 0 18 20" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12.3333 4.99999V4.33332C12.3333 3.3999 12.3333 2.93319 12.1517 2.57667C11.9919 2.26307 11.7369 2.0081 11.4233 1.84831C11.0668 1.66666 10.6001 1.66666 9.66667 1.66666H8.33333C7.39991 1.66666 6.9332 1.66666 6.57668 1.84831C6.26308 2.0081 6.00811 2.26307 5.84832 2.57667C5.66667 2.93319 5.66667 3.3999 5.66667 4.33332V4.99999M7.33333 9.58332V13.75M10.6667 9.58332V13.75M1.5 4.99999H16.5M14.8333 4.99999V14.3333C14.8333 15.7335 14.8333 16.4335 14.5608 16.9683C14.3212 17.4387 13.9387 17.8212 13.4683 18.0608C12.9335 18.3333 12.2335 18.3333 10.8333 18.3333H7.16667C5.76654 18.3333 5.06647 18.3333 4.53169 18.0608C4.06129 17.8212 3.67883 17.4387 3.43915 16.9683C3.16667 16.4335 3.16667 15.7335 3.16667 14.3333V4.99999"
+                                        stroke="#475467" stroke-width="1.66667" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
                                 </button>
-                            </div>
-                        </li>
-                        {% endfor %}
-                    </ul>
-
-                    <button onclick="CheckboxStatusHandling({{current_group_id}})" class="save-accounts-status-btn" id="save-accounts-status-btn" type="submit">Save tracking status</button>
+                            </form>
+                            <button class="edit-channel-btn" id="edit-channel-btn" data-variable="{{item.acc_id}}">
+                                <svg width="17" height="17" viewBox="0 0 19 19" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M1.39668 15.0964C1.43497 14.7518 1.45411 14.5795 1.50624 14.4185C1.55249 14.2756 1.61784 14.1396 1.70051 14.0142C1.79369 13.8729 1.91627 13.7504 2.16142 13.5052L13.1667 2.49999C14.0871 1.57951 15.5795 1.57951 16.5 2.49999C17.4205 3.42046 17.4205 4.91285 16.5 5.83332L5.49475 16.8386C5.2496 17.0837 5.12702 17.2063 4.98572 17.2995C4.86035 17.3821 4.72439 17.4475 4.58152 17.4937C4.42048 17.5459 4.24819 17.565 3.90362 17.6033L1.08331 17.9167L1.39668 15.0964Z"
+                                        stroke="#475467" stroke-width="1.66667" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                            </button>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </section>
+<!--        <button class="delete-group-btn" id="delete-group-btn">Delete Group</button>-->
         </section>
 
         <section class="modal__add-new-page-window" id="modal-window">
@@ -163,7 +140,6 @@
                             <li class="options-item">
                                 <label class="options-item-lb">Group*</label>
                                 <select class="options-select" name="group">
-                                    <option>Default</option>
                                     {% for group in groups%}
                                     <option>{{group.name}}</option>
                                     {% endfor %}
@@ -196,6 +172,7 @@
                     </div>
 
                     <button class="options-add-new-group-btn" id="options-add-new-group-btn">Add new group</button>
+                    <button class="delete-group-btn" id="delete-group-btn" style="display: none;">Delete Group</button>
                 </form>
 
             </div>
@@ -204,7 +181,7 @@
 
         <section class="modal__add-new-page-window" id="group-delete-modal-window">
             <div class="modal-wrapper">
-                <form action="{{ url_for('delete_group', current_group_id=current_group_id) }}" method="post" id="delete-group__form"
+                <form action="{{ url_for('delete_group') }}" method="post" id=""
                       class="delete-group__form">
                     <div class="title-close">
                         <h3 class="modal-title">Delete group</h3>
@@ -221,21 +198,17 @@
                             Choose group to replace accounts:
 
                         </p>
-                        <select class="delete-group-select" name="group-name">
-                            <option>Default</option>
-                            {% for group in groups%}
-                            <option>{{group.name}}</option>
-                            {% endfor %}
-                        </select>
+                              <select class="delete-group-select" name="group">
+                                    <option>Default</option>
+                                    {% for group in groups%}
+                                    <option>{{group.name}}</option>
+                                    {% endfor %}
+                                </select>
 
                     </div>
                     <div class="delete-modal__manage-btns-wrapper">
-                    <button class="delete-modal__save-changes-btn" id="delete-modal__save-changes-btn"
-                    name="send-delete-form" value="button-save"
-                    >Save accounts</button>
-                    <button class="delete-modal__del-anyway-btn" id="delete-modal__del-anyway-btn"
-                    name="send-delete-form" value="button-delete">
-                        Delete with accounts</button>
+                    <button class="delete-modal__save-changes-btn" id="delete-modal__save-changes-btn">Save accounts</button>
+                    <button class="delete-modal__del-anyway-btn" id="delete-modal__del-anyway-btn">Delete with accounts</button>
                     </div>
                 </form>
 
@@ -272,46 +245,24 @@
                     <input type="hidden" id="accountIdField" name="accountIdField" value="">
                     <div class="delete-modal__manage-btns-wrapper">
                     <button class="save-change-group-account" id="change-group-btn"
-                    name="send-delete-form" value="button-save"
+                    name="send-delete-form"
                     >Save</button>
                     </div>
                 </form>
 
             </div>
         </section>
+
         <section id="modal" class="modal">
 
         <div class="modal-content">
             <span id="closeModal" class="close">&times;</span>
             <p id="modal-text">Account will be added soon!</p>
         </div>
-        </section>
-
-        <section id="account-added-modal" class="modal">
-
-        <div class="account-added-modal-content">
-            <span id="close-account-added-modal" class="close">&times;</span>
-            <p id="close-account-added-modal-text">Account has been added!<br>
-                Go to <a class="go-to-curr-group-id-link" id="go-to-curr-group-id-link" href="#">page</a> to check</p>
-        </div>
-        </section>
-
-            <section class="modal__add-new-page-window" id="changes-involved-modal">
-            <div class="modal-wrapper changes-success-modal-wrapper">
-                <p>Changes saved successfully!</p>
-                <button class="changes-success-btn" id="changes-success-btn">OK</button>
-            </div>
-        </section>
-    </section>
-
-
-    <section>
-
     </section>
     </main>
 
     <script src="../static/js/script.js"></script>
-    <script src="../static/js/account_add.js"></script>
     <script src="../static/js/script_move.js"></script>
 
 </body>

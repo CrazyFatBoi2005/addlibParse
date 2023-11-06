@@ -25,4 +25,9 @@ class Account(SqlAlchemyBase):
 
     account_image = sqlalchemy.Column(sqlalchemy.String)
 
+    account_is_tracked = sqlalchemy.Column(sqlalchemy.Integer, default=1)
+
+    group_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('groups.id'))
+
+    group = orm.relationship('Group', back_populates='accounts')
     ads = orm.relationship("Advertisements", back_populates="account")

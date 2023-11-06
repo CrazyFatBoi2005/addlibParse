@@ -29,8 +29,10 @@ rename_filter = {
 
 
 # start
-def parse_page(id: str, platform=None, media=None, ip=None, url=None):
+def parse_page(id: str, group_id: int, platform=None, media=None, ip=None, url=None):
     db_session.global_init("databases/accounts.db")
+    # print(group_id)
+    # print(platform)
     if url is None:
         url_with_filters = \
             f"https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&" \
@@ -54,13 +56,12 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
     account = Account(url)
     options = Options()
     options.add_argument("--headless")
-    profile_directory = r'%AppData%\Mozilla\Firefox\Profiles\42ryon9o.adParseProf'
-    profile = webdriver.FirefoxProfile(os.path.expandvars(profile_directory))
-    options.profile = profile
+    # profile_directory = r'%AppData%\Mozilla\Firefox\Profiles\42ryon9o.adParseProf'
+    # profile = webdriver.FirefoxProfile(os.path.expandvars(profile_directory))
+    # options.profile = profile
     driver = webdriver.Firefox(options=options)
     driver.get(url_with_filters)
     try:
-        print(20)
         _ = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//div[@class='_7jvw x2izyaf x1hq5gj4 x1d52u69']")))
     except TimeoutException:
         print("empty account")
@@ -117,6 +118,8 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
         api_account.adlib_account_link = account.link
         api_account.account_activeAds = account.active_ads
         api_account.account_socialMedia_link = account.link
+        print(f"group_id {group_id}")
+        api_account.group_id = group_id
         db_sess.add(api_account)
         db_sess.commit()
     except IntegrityError:
@@ -171,5 +174,5 @@ def parse_page(id: str, platform=None, media=None, ip=None, url=None):
 
     db_sess.commit()
     db_sess.close()
-    requests.post(f"{ip}/refresh")
+    requests.post(f"{ip}/refresh/{group_id}")
     print(f"Account {account.name} in database, refresh page")
