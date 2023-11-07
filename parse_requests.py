@@ -1,3 +1,4 @@
+import json
 import os
 import time
 import requests
@@ -10,6 +11,7 @@ from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from data.accounts import Account as ApiAccount
+from data.groups import Group as ApiGroup
 from data.jobqueue import Job
 from data.advertisement import Advertisements
 import datetime
@@ -107,6 +109,7 @@ def parse_page(id: str, group_id: int, platform=None, media=None, ip=None, url=N
     account.active_ads = account.count_active()
     driver.close()
     print(f"End {account.name}.")
+    account_id = account.id
     try:
         db_sess = db_session.create_session()
         api_account = ApiAccount()
@@ -172,6 +175,13 @@ def parse_page(id: str, group_id: int, platform=None, media=None, ip=None, url=N
             api_ads.account_id = account.id
             db_sess.add(api_ads)
 
+    group = db_sess.query(ApiGroup).filter(ApiGroup.id == group_id).first()
+    try:
+        accounts_order = json.loads(group.accounts_order)
+    except TypeError:
+        accounts_order = []
+    accounts_order.append(int(account_id))
+    group.accounts_order = json.dumps(accounts_order)
     db_sess.commit()
     db_sess.close()
     requests.post(f"{ip}/refresh/{group_id}")

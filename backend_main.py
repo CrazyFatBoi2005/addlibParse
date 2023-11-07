@@ -1,6 +1,7 @@
 import csv
 import datetime
 import io
+import json
 import os
 
 import requests
@@ -29,13 +30,28 @@ socketio = SocketIO(app)
 
 @app.route('/', methods=["GET", "POST"])
 @app.route('/index', methods=["GET", "POST"])
+@app.route('/0', methods=["GET", "POST"])
+@app.route('/index/0', methods=["GET", "POST"])
 def index():
     db_sess = db_session.create_session()
     groups = db_sess.query(Group).all()
     groups_count = len(groups)
-    current_group = ""
+    if groups_count == 0:
+        new_group = Group()
+        new_group.id = 0
+        new_group.name = "Default"
+        db_sess.add(new_group)
+        db_sess.commit()
+    groups = db_sess.query(Group).all()
     current_group_id = 0
-    accounts = db_sess.query(Account).filter(Account.group_id == 0).all()
+    current_group = db_sess.query(Group).filter(Group.id == 0).first()
+    try:
+        accounts_order_list = json.loads(current_group.accounts_order)
+    except TypeError:
+        accounts_order_list = []
+    accounts_order_dict = {value: i for i, value in enumerate(accounts_order_list)}
+    accounts = db_sess.query(Account).filter(Account.group_id == current_group_id).all()
+    accounts = sorted(accounts, key=lambda x: accounts_order_dict[x.acc_id])
     accounts_count = len(accounts)
     ad_status = "active"
     db_sess.close()
@@ -52,8 +68,13 @@ def index_group(group_id):
     current_group = db_sess.query(Group).filter(Group.id == group_id).first()
     current_group_id = current_group.id
     groups_count = len(groups)
-    accounts = db_sess.query(Account).filter(Account.group_id == group_id).all()
-    # accounts = db_sess.query(Account).all()
+    try:
+        accounts_order_list = json.loads(current_group.accounts_order)
+    except TypeError:
+        accounts_order_list = []
+    accounts_order_dict = {value: i for i, value in enumerate(accounts_order_list)}
+    accounts = db_sess.query(Account).filter(Account.group_id == current_group_id).all()
+    accounts = sorted(accounts, key=lambda x: accounts_order_dict[x.acc_id])
     accounts_count = len(accounts)
     ad_status = "active"
     db_sess.close()
@@ -74,7 +95,7 @@ def add_new_group():
         db_sess.commit()
         group_id = db_sess.query(Group.id).filter(Group.name == group_name).first()[0]
         db_sess.close()
-        return redirect(f"/index/{group_id}")
+        return redirect(f"/{group_id}")
     else:
         return "", 204
 
@@ -94,8 +115,13 @@ def delete_group():
         if group_name != "Default":
             new_group_id = db_sess.query(Group.id).filter(Group.name == group_name).first()[0]
             current_group_accounts = db_sess.query(Account).filter(Account.group_id == current_group_id).all()
-            for acc in current_group_accounts:
-                acc.group_id = new_group_id
+            if len(current_group_accounts) != 0:
+                pur_group = db_sess.query(Group).filter(Group.id == new_group_id).first()
+                pur_group_order = json.loads(pur_group.accounts_order)
+                for acc in current_group_accounts:
+                    acc.group_id = new_group_id
+                    pur_group_order.append(acc.acc_id)
+                pur_group.accounts_order = json.dumps(pur_group_order)
             current_group = db_sess.query(Group).filter(Group.id == current_group_id).first()
             db_sess.delete(current_group)
             db_sess.commit()
@@ -104,13 +130,18 @@ def delete_group():
         else:
             new_group_id = 0
             current_group_accounts = db_sess.query(Account).filter(Account.group_id == current_group_id).all()
-            for acc in current_group_accounts:
-                acc.group_id = new_group_id
+            if len(current_group_accounts) != 0:
+                pur_group = db_sess.query(Group).filter(Group.id == new_group_id).first()
+                pur_group_order = json.loads(pur_group.accounts_order)
+                for acc in current_group_accounts:
+                    acc.group_id = new_group_id
+                    pur_group_order.append(acc.acc_id)
+                pur_group.accounts_order = json.dumps(pur_group_order)
             current_group = db_sess.query(Group).filter(Group.id == current_group_id).first()
             db_sess.delete(current_group)
             db_sess.commit()
             db_sess.close()
-            return redirect(f"/")
+            return redirect(f"/0")
     elif action == 'button-delete':
         current_group_accounts = db_sess.query(Account).filter(Account.group_id == current_group_id).all()
         for acc in current_group_accounts:
@@ -133,11 +164,29 @@ def change_account_group():
         new_group_id = db_sess.query(Group.id).filter(Group.name == group_name).first()[0]
     else:
         new_group_id = 0
-
     current_account = db_sess.query(Account).filter(Account.acc_id == account_id).first()
-    current_account.group_id = new_group_id
-    db_sess.commit()
-    db_sess.close()
+
+    if current_account.group_id != new_group_id:
+        purpose_group = db_sess.query(Group).filter(Group.name == group_name).first()
+        try:
+            accounts_order_purpose_group = json.loads(purpose_group.accounts_order)
+        except TypeError:
+            accounts_order_purpose_group = []
+        accounts_order_purpose_group.append(account_id)
+        purpose_group.accounts_order = json.dumps(accounts_order_purpose_group)
+
+        current_group = db_sess.query(Group).filter(Group.id == current_account.group_id).first()
+        try:
+            accounts_order_current_group = json.loads(current_group.accounts_order)
+        except TypeError:
+            accounts_order_current_group = []
+        accounts_order_current_group.remove(account_id)
+        current_group.accounts_order = json.dumps(accounts_order_current_group)
+
+        current_account.group_id = new_group_id
+
+        db_sess.commit()
+        db_sess.close()
     if new_group_id != 0:
         return redirect(f"/{new_group_id}")
     return redirect("/")
@@ -172,6 +221,20 @@ def change_accounts_status():
     db_sess.commit()
     db_sess.close()
     requests.post(f"{app.config.get('API_IP')}/restarting_jobs")
+    return ""
+
+
+@app.route('/change_accounts_order', methods=["POST"])
+def change_accounts_order():
+    accounts_order_list = request.get_json()
+    current_group_id = accounts_order_list[-1]
+    accounts_order_list = [int(i.split("_")[-1]) for i in accounts_order_list[:-1]]
+    accounts_order_list = json.dumps(accounts_order_list)
+    db_sess = db_session.create_session()
+    current_group = db_sess.query(Group).filter(Group.id == current_group_id).first()
+    current_group.accounts_order = accounts_order_list
+    db_sess.commit()
+    db_sess.close()
     return ""
 
 
@@ -243,6 +306,10 @@ def inactive_ads():
 def delete_page(account_id):
     db_sess = db_session.create_session()
     account = db_sess.query(Account).filter(Account.acc_id == account_id).first()
+    cur_group = db_sess.query(Group).filter(Group.id == account.group_id).first()
+    cur_group_order = json.loads(cur_group.accounts_order)
+    cur_group_order.remove(account_id)
+    cur_group.accounts_order = json.dumps(cur_group_order)
     job = db_sess.query(Job).filter(Job.account_id == account_id).first()
     ads = db_sess.query(Advertisements).filter(Advertisements.account_id == account_id).all()
     db_sess.delete(account)

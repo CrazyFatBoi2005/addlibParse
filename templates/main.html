@@ -20,7 +20,7 @@
             <a href="/" class="back-to-groups-link">← Back to groups</a>
                 <div class="add-new-page__form-main">
                     <div class="add-new-page__wrapper">
-                        {% if current_group == "" %}
+                        {% if current_group.name == "Default" %}
                             <h3 class="no-margins ad-pages-text">Default group accounts</h3>
                         {% else %}
                             <h3 class="no-margins ad-pages-text">{{current_group.name}} accounts</h3>
@@ -29,7 +29,7 @@
                     </div>
                     <div class="group-manage-buttons">
                     <button class="add-new-group-btn" id="open-group-modal">Add new group</button>
-                    {% if current_group != "" %}
+                    {% if current_group.name != "Default" %}
                         <button class="delete-group-btn" id="delete-group-btn">Delete Group</button>
                     {% else %}
                         <button style="display: none;" class="delete-group-btn" id="delete-group-btn">Delete Group</button>
@@ -49,12 +49,21 @@
 <!--                        <button class="add-new-group-btn" id="open-group-modal">+ new</button>-->
 <!--                    </li>-->
                 </ul>
-                <button class="add-new-pages-btn" id="open-modal">Add New Accounts</button>
+                <button class="add-new-pages-btn" id="open-modal">Add New Account</button>
             </section>
 
             <section class="pages-content__content">
-                    <button class="change-accounts-status-btn" id="change-accounts-status-btn" type="button">Change tracking status</button>
-                    <ul class="pages-content__content-list">
+                    <div class="change-buttons__wrapper">
+                        {% if accounts_count == 0%}
+                            <button class="change-accounts-status-btn" id="change-accounts-status-btn" type="button" disabled>Change tracking status</button>
+                            <button class="change-accounts-order-btn" id="change-accounts-order-btn" type="button" disabled>Change order</button>
+
+                        {% else %}
+                            <button class="change-accounts-status-btn" id="change-accounts-status-btn" type="button">Change tracking status</button>
+                            <button class="change-accounts-order-btn" id="change-accounts-order-btn" type="button">Change order</button>
+                        {% endif %}
+                    </div>
+                <ul class="pages-content__content-list">
                         <li class="pages-content__content-title">
                             <p class="name-characteristics characteristics-text">Name</p>
                             <p class="total-characteristics characteristics-text">Total Ads</p>
@@ -65,18 +74,18 @@
                         </li>
                         {% for item in accounts %}
                         <li class="pages-content__content-item" id="el_{{item.acc_id}}">
-                            <div class="account-status-management__wrapper">
+                            <div draggable="false" class="account-status-management__wrapper">
                                 {% if item.account_is_tracked == 1%}
-                                <input type="checkbox"
+                                <input draggable="false" type="checkbox"
                                        class="tracking-status-checkbox" id="checkbox-{{item.acc_id}}"
                                        name="status-checkbox" disabled checked >
                                 {% else %}
-                                <input type="checkbox"
+                                <input draggable="false" type="checkbox"
                                        class="tracking-status-checkbox" id="checkbox-{{item.acc_id}}"
                                        name="status-checkbox" disabled >
                                 {% endif %}
-                                <label class="account-status-management__wrapper-label" for="checkbox-{{item.acc_id}}">
-                                    <a href="{{url_for('ads', account_id=item.acc_id, ad_status=ad_status)}}" class="pages-content__content-item-link"
+                                <label draggable ="false"class="account-status-management__wrapper-label" for="checkbox-{{item.acc_id}}">
+                                    <a draggable="false" href="{{url_for('ads', account_id=item.acc_id, ad_status=ad_status)}}" class="pages-content__content-item-link"
                                     draggable="false">
                                         <div class="content-item-describer" draggable="false">
                                             <img src="{{item.account_image}}" alt="" width="40" height="40" draggable="false">
@@ -120,6 +129,8 @@
                     </ul>
 
                     <button onclick="CheckboxStatusHandling({{current_group_id}})" class="save-accounts-status-btn" id="save-accounts-status-btn" type="submit">Save tracking status</button>
+                    <button onclick="CheckboxOrderHandling({{current_group_id}})" class="save-accounts-order-btn" id="save-accounts-order-btn" type="button">Save order</button>
+
         </section>
 
         <section class="modal__add-new-page-window" id="modal-window">
@@ -163,7 +174,6 @@
                             <li class="options-item">
                                 <label class="options-item-lb">Group*</label>
                                 <select class="options-select" name="group">
-                                    <option>Default</option>
                                     {% for group in groups%}
                                     <option>{{group.name}}</option>
                                     {% endfor %}
@@ -171,7 +181,7 @@
                             </li>
                         </ul>
                     </div>
-                    <button class="options-add-new-page-btn">Add new page</button>
+                    <button class="options-add-new-page-btn">Add new account</button>
                 </form>
 
             </div>
@@ -222,7 +232,6 @@
 
                         </p>
                         <select class="delete-group-select" name="group-name">
-                            <option>Default</option>
                             {% for group in groups%}
                             <option>{{group.name}}</option>
                             {% endfor %}
@@ -262,7 +271,6 @@
 
                         </p>
                         <select class="change-group-select" name="group-name">
-                            <option>Default</option>
                             {% for group in groups%}
                             <option>{{group.name}}</option>
                             {% endfor %}
@@ -312,7 +320,6 @@
 
     <script src="../static/js/script.js"></script>
     <script src="../static/js/account_add.js"></script>
-    <script src="../static/js/script_move.js"></script>
 
 </body>
 

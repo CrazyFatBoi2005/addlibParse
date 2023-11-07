@@ -39,7 +39,7 @@ var socket = io.connect('http://127.0.0.1:5000');
 
 
 socket.on('page_changed', function(data) {
-    location.reload();
+    window.location.href = window.location.href;
 });
 
 socket.on('show_modal', function(data) {
@@ -107,11 +107,18 @@ var saveAccountsStatusBtn = document.getElementById('save-accounts-status-btn');
 var trackingStatusCheckboxes = document.querySelectorAll('.tracking-status-checkbox');
 var changesInvolvedModal = document.getElementById('changes-involved-modal')
 var changesSuccessBtn = document.getElementById('changes-success-btn')
+
+
+var changeAccountsOrderBtn = document.getElementById("change-accounts-order-btn")
+var saveAccountsOrderBtn = document.getElementById("save-accounts-order-btn")
+
+
 changeAccountsStatusBtn.addEventListener('click', () => {
     trackingStatusCheckboxes.forEach(function(trackingStatusCheckbox) {
-    trackingStatusCheckbox.disabled = false
+    trackingStatusCheckbox.disabled = false;
     });
     saveAccountsStatusBtn.style.display = 'flex';
+    changeAccountsOrderBtn.disabled = true;
 });
 
 
@@ -119,6 +126,8 @@ saveAccountsStatusBtn.addEventListener('click', () => {
     trackingStatusCheckboxes.forEach(function(trackingStatusCheckbox) {
     trackingStatusCheckbox.disabled = true;
     });
+    changeAccountsOrderBtn.disabled = false;
+
     changesInvolvedModal.style.display = 'block';
     saveAccountsStatusBtn.style.display = 'none';
 });
@@ -142,6 +151,85 @@ function CheckboxStatusHandling(currentGroupId) {
         url: '/change_accounts_status',
         contentType: 'application/json;charset=UTF-8',
         data: JSON.stringify(statusDict),
+        success: function(response) {
+            console.log('Успешно отправлено');
+        },
+        error: function(error) {
+            console.error('Ошибка:', error);
+        }
+    });
+}
+
+
+changeAccountsOrderBtn.addEventListener('click', () => {
+    var accountsListElements = document.querySelectorAll(".pages-content__content-item");
+    accountsListElements.forEach(function(accountsListEl) {
+        accountsListEl.classList.add("pages-content__content-item-ordering")
+        accountsListEl.draggable = true;
+    });
+
+    saveAccountsOrderBtn.style.display = "flex";
+    changeAccountsStatusBtn.disabled = true;
+    const accountsList = document.querySelector(".pages-content__content-list");
+
+    accountsList.addEventListener("dragstart", (evt) => {
+      evt.target.classList.add("selected");
+    })
+
+    accountsList.addEventListener("dragend", (evt) => {
+      evt.target.classList.remove("selected");
+    });
+
+
+    accountsList.addEventListener("dragover", (evt) => {
+      evt.preventDefault();
+
+      const activeElement = accountsList.querySelector(".selected");
+      const currentElement = evt.target;
+
+      const isMoveable = activeElement !== currentElement &&
+        currentElement.classList.contains("pages-content__content-item");
+
+      if (!isMoveable) {
+        return;
+      }
+
+      const nextElement = (currentElement === activeElement.nextElementSibling) ?
+          currentElement.nextElementSibling :
+          currentElement;
+
+      accountsList.insertBefore(activeElement, nextElement);
+    });
+
+});
+
+
+saveAccountsOrderBtn.addEventListener('click', () => {
+    var accountsListElements = document.querySelectorAll(".pages-content__content-item");
+    accountsListElements.forEach(function(accountsListEl) {
+        accountsListEl.classList.remove("pages-content__content-item-ordering")
+        accountsListEl.draggable = false;
+    });
+
+    changeAccountsStatusBtn.disabled = false;
+    saveAccountsOrderBtn.style.display = "none";
+
+});
+
+
+function CheckboxOrderHandling(currentGroupId) {
+    var accountsListElements = document.querySelectorAll(".pages-content__content-item");
+    var currentGroupId = currentGroupId
+    var orderList = [];
+    accountsListElements.forEach(function(accountsEl) {
+        orderList.push(accountsEl.id);
+    });
+    orderList.push(currentGroupId);
+    $.ajax({
+        type: 'POST',
+        url: '/change_accounts_order',
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify(orderList),
         success: function(response) {
             console.log('Успешно отправлено');
         },

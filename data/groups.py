@@ -12,5 +12,7 @@ class Group(SqlAlchemyBase):
 
     name = sqlalchemy.Column(sqlalchemy.String)
 
+    accounts_order = sqlalchemy.Column(sqlalchemy.Text)
+
     accounts = orm.relationship('Account', back_populates='group')
 

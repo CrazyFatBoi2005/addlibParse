@@ -13,7 +13,7 @@ socket.on('data_updated', function(group_id) {
 
     if (groupIdUrl === "" || groupIdUrl === "index") {
         if (group_id === 0) {
-            location.reload();
+            window.location.href = window.location.href;
         } else {
             accountAddedModal.classList.add("show");
             var linkToGroup = document.getElementById('go-to-curr-group-id-link');
@@ -26,7 +26,7 @@ socket.on('data_updated', function(group_id) {
         }
     } else {
         if (groupIdUrlInt === group_id) {
-            location.reload();
+            window.location.href = window.location.href;
         } else {
             accountAddedModal.classList.add("show");
             var linkToGroup = document.getElementById('go-to-curr-group-id-link');
