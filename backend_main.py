@@ -24,7 +24,7 @@ from requests_futures.sessions import FuturesSession
 app = Flask(__name__)
 session_ = FuturesSession()
 app.config['SECRET_KEY'] = "NikitinPlaxin315240"
-app.config['API_IP'] = "http://127.0.0.1:8800"
+app.config['API_IP'] = "http://178.253.42.233:8800"
 socketio = SocketIO(app)
 
 
@@ -292,7 +292,7 @@ def inactive_ads():
     account_id = request.args.get("account_id")
     db_sess = db_session.create_session()
     ads = db_sess.query(Advertisements).filter(Advertisements.account_id == account_id,
-                                               Advertisements.ad_status == "Inactive").all()
+                                               Advertisements.ad_status == "Inactive").order_by(desc(Advertisements.ad_daysActive)).all()
     account_name, adlib_account_link = db_sess.query(Account.account_name, Account.adlib_account_link).filter(Account.acc_id == account_id).first()
     ads_count = len(ads)
     cur_date = str(datetime.date.today())
@@ -337,7 +337,7 @@ def status1_filtration(db_sess, account_id, over_days):
     return_status = 1
     ads = db_sess.query(Advertisements).filter(Advertisements.account_id == account_id,
                                                Advertisements.ad_daysActive >= over_days,
-                                               ).all()
+                                               ).order_by(desc(Advertisements.ad_daysActive)).all()
     return ads, return_status
 
 
@@ -346,7 +346,7 @@ def status2_filtration(db_sess, account_id, over_days, media_type):
     ads = db_sess.query(Advertisements).filter(Advertisements.account_id == account_id,
                                                Advertisements.ad_daysActive >= over_days,
                                                Advertisements.ad_mediaType == media_type
-                                               ).all()
+                                               ).order_by(desc(Advertisements.ad_daysActive)).all()
     return ads, return_status
 
 
@@ -355,7 +355,7 @@ def status3_filtration(db_sess, account_id, over_days, platforms):
     ads = db_sess.query(Advertisements).filter(Advertisements.account_id == account_id,
                                                Advertisements.ad_daysActive >= over_days,
                                                Advertisements.ad_platform.like(f'%{platforms}%')
-                                               ).all()
+                                               ).order_by(desc(Advertisements.ad_daysActive)).all()
     return ads, return_status
 
 
@@ -365,7 +365,7 @@ def status4_filtration(db_sess, account_id, over_days, platforms, media_type):
                                                Advertisements.ad_daysActive >= over_days,
                                                Advertisements.ad_mediaType == media_type,
                                                Advertisements.ad_platform.like(f'%{platforms}%')
-                                               ).all()
+                                               ).order_by(desc(Advertisements.ad_daysActive)).all()
     return ads, return_status
 
 
@@ -473,12 +473,6 @@ def download_csv():
     return response
 
 
-# def my_callback_function(resp, *args, **kwargs):
-#     print(123, 123, 123, "\n")
-#     socketio.emit('media_is_ready', "OK:200")
-#     return "OK", 200
-
-
 @app.route('/install_media', methods=["POST"])
 def install_media():
     account_id = request.args.get("account_id")
@@ -561,7 +555,7 @@ def receive_html():
 def main():
     db_session.global_init("databases/accounts.db")
 
-    socketio.run(app, host="127.0.0.1", debug=True, allow_unsafe_werkzeug=True, use_reloader=False)
+    socketio.run(app, host="178.253.42.233", debug=True, allow_unsafe_werkzeug=True, use_reloader=False)
 
 
 if __name__ == '__main__':

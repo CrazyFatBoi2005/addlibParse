@@ -1,7 +1,7 @@
 const closeAccountAddedModal = document.getElementById('close-account-added-modal');
 const accountAddedModal = document.getElementById('account-added-modal');
 
-var socket = io.connect('http://127.0.0.1:5000');
+var socket = io.connect('http://178.253.42.233:5000');
 
 socket.on('data_updated', function(group_id) {
     var currentURL = window.location.pathname;

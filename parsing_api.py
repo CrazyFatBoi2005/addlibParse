@@ -24,7 +24,7 @@ app = Flask(__name__)
 CORS(app)
 scheduler = BackgroundScheduler()
 app.config['SECRET_KEY'] = "NikitinPlaxin31524011"
-app.config['BACKEND_IP'] = "http://127.0.0.1:5000"
+app.config['BACKEND_IP'] = "http://178.253.42.233:5000"
 
 
 @app.route('/delete_job/<int:id>', methods=["POST"])
@@ -166,7 +166,7 @@ def main():
     scheduler.start()
     restart_all_job()
     print("job_rest")
-    app.run(host="127.0.0.1", port=8800, debug=True, use_reloader=False)
+    app.run(host="178.253.42.233", port=8800, debug=True, use_reloader=False)
 
 
 if __name__ == '__main__':
