@@ -42,6 +42,7 @@ def install_media(account_id):
     ad_status = request.args.get("ad_status")
     db_sess = db_session.create_session()
     acc_name = db_sess.query(Account.account_name).filter(Account.acc_id == account_id)[0][0]
+    acc_name = "_".join(acc_name.split())
     if ad_status == "active":
         download_links = db_sess.query(Advertisements.ad_downloadLink, Advertisements.ad_id_another,
                                        Advertisements.ad_mediaType) \
@@ -93,6 +94,7 @@ def install_media(account_id):
 
 @app.route("/delete_media/<string:account_name>", methods=["POST", "GET"])
 def delete_media(account_name):
+    account_name = "_".join(account_name.split())
     try:
         ad_status = request.args.get("ad_status")
         if ad_status == "active":
@@ -106,15 +108,15 @@ def delete_media(account_name):
 
 @app.route('/check_fully_download/<string:account_name>', methods=["POST", "GET"])
 def check_fully_download(account_name):
+    account_name = "_".join(account_name.split())
+    print(account_name)
     ad_status = request.args.get("ad_status")
     if ad_status == "active":
         file_path = f"media_zips/{account_name}_active_media.zip"
         file_exists = os.path.exists(file_path)
-        print(file_exists)
     else:
         file_path = f"media_zips/{account_name}_inactive_media.zip"
         file_exists = os.path.exists(file_path)
-        print(file_exists)
     response = jsonify({"status": file_exists})
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response

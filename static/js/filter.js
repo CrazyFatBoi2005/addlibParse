@@ -41,7 +41,9 @@ function disableButton() {
 var media_key = "mediaProcess_" + pageId + "_" + adStatus;
 window.addEventListener("load", function() {
     var acc_name = document.getElementById("download-media-form__wrapper").getAttribute("data-acc-name");
-    var checker_url = "http://178.253.42.233/check_fully_download/" + acc_name + "?ad_status=" + adStatus
+    var accountN = acc_name.split(" ");
+    accountN = accountN.join("_");
+    var checker_url = "http://178.253.42.233:8800/check_fully_download/" + accountN + "?ad_status=" + adStatus
     function pollProgramStatusSt() {
 
             $.get(checker_url, function(data) {
@@ -107,8 +109,9 @@ document.addEventListener("DOMContentLoaded", function() {
     console.log(mediaProcess);
     if (mediaProcess === "active") {
         var acc_name = document.getElementById("download-media-form__wrapper").getAttribute("data-acc-name");
-
-        var checker_url = "http://178.253.42.233:8800/check_fully_download/" + acc_name + "?ad_status=" + adStatus
+        var accountN = acc_name.split(" ");
+        accountN = accountN.join("_");
+        var checker_url = "http://178.253.42.233:8800/check_fully_download/" + accountN + "?ad_status=" + adStatus
         typeText()
         function pollProgramStatus() {
 

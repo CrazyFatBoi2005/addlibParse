@@ -36,6 +36,8 @@ def index():
     db_sess = db_session.create_session()
     groups = db_sess.query(Group).all()
     groups_count = len(groups)
+    if "Default" not in [i.name for i in groups]:
+        return redirect(f"/{1}")
     if groups_count == 0:
         new_group = Group()
         new_group.id = 0
@@ -90,6 +92,8 @@ def add_new_group():
     group_db = db_sess.query(Group).filter(Group.name == group_name).first()
     if not group_db:
         group = Group()
+        if group_name == "Default":
+            group.id = 0
         group.name = group_name
         db_sess.add(group)
         db_sess.commit()
@@ -145,6 +149,18 @@ def delete_group():
     elif action == 'button-delete':
         current_group_accounts = db_sess.query(Account).filter(Account.group_id == current_group_id).all()
         for acc in current_group_accounts:
+            account_job = db_sess.query(Job).filter(Job.account_id == acc.acc_id).first()
+            db_sess.delete(account_job)
+            acc_account_name = acc.account_name
+            acc_account_name = "_".join(acc_account_name.split())
+            if os.path.exists(f"media_zips/{acc_account_name}_active_media.zip"):
+                os.unlink(f"media_zips/{acc_account_name}_active_media.zip")
+            else:
+                pass
+            if os.path.exists(f"media_zips/{acc_account_name}_inactive_media.zip"):
+                os.unlink(f"media_zips/{acc_account_name}_inactive_media.zip")
+            else:
+                pass
             db_sess.delete(acc)
         current_group = db_sess.query(Group).filter(Group.id == current_group_id).first()
         db_sess.delete(current_group)
@@ -201,11 +217,9 @@ def change_accounts_status():
     accounts = db_sess.query(Account).filter(Account.group_id == current_group_id).all()
     for account in accounts:
         account_checkbox_status = checkbox_statuses[f"checkbox-{account.acc_id}"]
-        print(account_checkbox_status)
         if account_checkbox_status:
             account.account_is_tracked = 1
             account_job = db_sess.query(Job).filter(Job.account_id == account.acc_id).first()
-            print(account_job)
             if not account_job:
                 new_job = Job()
                 new_job.account_id = account.acc_id
@@ -318,14 +332,14 @@ def delete_page(account_id):
         db_sess.delete(ad)
     db_sess.commit()
     db_sess.close()
-    print(f"media_zips/{account.account_name}_active_media.zip")
-    print(os.path.exists(f"media_zips/{account.account_name}_active_media.zip"))
-    if os.path.exists(f"media_zips/{account.account_name}_active_media.zip"):
-        os.unlink(f"media_zips/{account.account_name}_active_media.zip")
+    acc_account_name = account.account_name
+    acc_account_name = "_".join(acc_account_name.split())
+    if os.path.exists(f"media_zips/{acc_account_name}_active_media.zip"):
+        os.unlink(f"media_zips/{acc_account_name}_active_media.zip")
     else:
         pass
-    if os.path.exists(f"media_zips/{account.account_name}_inactive_media.zip"):
-        os.unlink(f"media_zips/{account.account_name}_inactive_media.zip")
+    if os.path.exists(f"media_zips/{acc_account_name}_inactive_media.zip"):
+        os.unlink(f"media_zips/{acc_account_name}_inactive_media.zip")
     else:
         pass
     requests.post(f"{app.config.get('API_IP')}/delete_job/{account_id}")
@@ -477,6 +491,7 @@ def download_csv():
 def install_media():
     account_id = request.args.get("account_id")
     account_name = request.args.get("account_name")
+    account_name = "_".join(account_name.split())
     ad_status = request.args.get("ad_status")
     print(ad_status)
     if ad_status == "active":

@@ -71,7 +71,6 @@ body {
     border: 1px #EAECF0 solid;
     box-sizing: border-box;
     border-radius: 10px;
-    cursor: move;
 
 }
 
@@ -524,11 +523,11 @@ body {
 }
 
 .page-btns {
-    width: 490px;
+    width: 530px;
     display: flex;
     justify-content: space-between;
     height: min-content;
-    align-items: center;
+    align-items: baseline;
 }
 
 .filter-btn {
@@ -562,7 +561,7 @@ body {
 }
 
 .download-media-form {
-    width: 275px;
+    width: 180px;
 }
 .download-media-btn {
     background: none;
@@ -578,7 +577,7 @@ body {
     border: 1px #EAECF0 solid;
     border-radius: 8px;
     text-align: center;
-    width: 275px;
+    width: 180px;
 
 }
 
@@ -589,7 +588,7 @@ body {
 
 
 .loading-text__wrapper {
-    width: 275px;
+    width: 180px;
 }
 
 .loading-text {
@@ -606,6 +605,10 @@ body {
     align-items: flex-end;
 }
 
+.download-csv__wrapper {
+    display: flex;
+    justify-content: flex-end;
+}
 
 .download-csv-btn {
     background: none;
@@ -616,7 +619,8 @@ body {
     font-weight: 400;
     line-height: 20px;
     letter-spacing: 0em;
-    text-align: left;
+    width: 300px;
+    text-align: center;
     padding: 10px 16px;
     border-radius: 8px;
     background-color: #6941C6;

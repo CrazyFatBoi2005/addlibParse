@@ -58,9 +58,9 @@ def parse_page(id: str, group_id: int, platform=None, media=None, ip=None, url=N
     account = Account(url)
     options = Options()
     options.add_argument("--headless")
-    # profile_directory = r'%AppData%\Mozilla\Firefox\Profiles\42ryon9o.adParseProf'
-    # profile = webdriver.FirefoxProfile(os.path.expandvars(profile_directory))
-    # options.profile = profile
+    profile_directory = r'%AppData%\Mozilla\Firefox\Profiles\42ryon9o.adParseProf'
+    profile = webdriver.FirefoxProfile(os.path.expandvars(profile_directory))
+    options.profile = profile
     driver = webdriver.Firefox(options=options)
     driver.get(url_with_filters)
     try:

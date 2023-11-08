@@ -165,6 +165,7 @@ changeAccountsOrderBtn.addEventListener('click', () => {
     var accountsListElements = document.querySelectorAll(".pages-content__content-item");
     accountsListElements.forEach(function(accountsListEl) {
         accountsListEl.classList.add("pages-content__content-item-ordering")
+        accountsListEl.style.cursor = "move";
         accountsListEl.draggable = true;
     });
 
