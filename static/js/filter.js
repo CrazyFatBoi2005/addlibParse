@@ -83,19 +83,19 @@ function typeText() {
     }
 }
 
-installBtn.addEventListener('click', () => {
-  localStorage.setItem(media_key, "active");
-    console.log(media_key);
-  typeText();
-
-  socket.on('media_is_ready', function(data) {
-    enableButton();
-    clearTimeout(typingInterval);
-    textLoading.textContent = ""
-    console.log('Данные обновлены:', data);
-});
-
-});
+//installBtn.addEventListener('click', () => {
+//  localStorage.setItem(media_key, "active");
+//    console.log(media_key);
+//  typeText();
+//
+//  socket.on('media_is_ready', function(data) {
+//    enableButton();
+//    clearTimeout(typingInterval);
+//    textLoading.textContent = ""
+//    console.log('Данные обновлены:', data);
+//});
+//
+//});
 
 
 socket.on('disable_btn', function(data) {

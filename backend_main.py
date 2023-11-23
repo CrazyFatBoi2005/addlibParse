@@ -2,12 +2,10 @@ import csv
 import datetime
 import io
 import json
-import os
 
 import requests
 import socketio
-from flask import Flask, render_template, redirect, request, url_for, Response, session, send_file, jsonify
-from flask_cors import CORS
+from flask import Flask, render_template, redirect, request, Response, session, send_file, jsonify
 from flask_socketio import SocketIO
 from sqlalchemy import desc
 
@@ -16,16 +14,30 @@ from data.accounts import Account
 from data.groups import Group
 from data.advertisement import Advertisements
 from data.jobqueue import Job
-
+import boto3
+from botocore.client import Config
 from io import BytesIO
-import zipfile
 from requests_futures.sessions import FuturesSession
 
 app = Flask(__name__)
 session_ = FuturesSession()
 app.config['SECRET_KEY'] = "NikitinPlaxin315240"
+app.config['BUCKET_NAME'] = "7b3ae2a6-1e521fbf-430f-4275-aea8-858d0059469b"
 app.config['API_IP'] = "http://178.253.42.233:8800"
-socketio = SocketIO(app)
+socketio_ = SocketIO(app)
+socketio_.init_app(app)
+
+s3 = boto3.resource(
+        's3',
+        endpoint_url='https://s3.timeweb.com',
+        region_name='ru-1',
+        aws_access_key_id='it27776',
+        aws_secret_access_key='1cad6c15403631a01cc0bf26a5ce1524',
+        config=Config(s3={'addressing_style': 'path'})
+    )
+
+bucket_name = "7b3ae2a6-1e521fbf-430f-4275-aea8-858d0059469b"
+bucket_obj = s3.Bucket(bucket_name)
 
 
 @app.route('/', methods=["GET", "POST"])
@@ -36,14 +48,16 @@ def index():
     db_sess = db_session.create_session()
     groups = db_sess.query(Group).all()
     groups_count = len(groups)
-    if "Default" not in [i.name for i in groups]:
-        return redirect(f"/{1}")
+
     if groups_count == 0:
         new_group = Group()
         new_group.id = 0
         new_group.name = "Default"
         db_sess.add(new_group)
         db_sess.commit()
+    groups = db_sess.query(Group).all()
+    if "Default" not in [i.name for i in groups]:
+        return redirect(f"/{1}")
     groups = db_sess.query(Group).all()
     current_group_id = 0
     current_group = db_sess.query(Group).filter(Group.id == 0).first()
@@ -121,7 +135,12 @@ def delete_group():
             current_group_accounts = db_sess.query(Account).filter(Account.group_id == current_group_id).all()
             if len(current_group_accounts) != 0:
                 pur_group = db_sess.query(Group).filter(Group.id == new_group_id).first()
-                pur_group_order = json.loads(pur_group.accounts_order)
+                try:
+                    pur_group_order = json.loads(pur_group.accounts_order)
+                except:
+                    pur_group_order = []
+                if pur_group_order is None:
+                    pur_group_order = []
                 for acc in current_group_accounts:
                     acc.group_id = new_group_id
                     pur_group_order.append(acc.acc_id)
@@ -152,15 +171,8 @@ def delete_group():
             account_job = db_sess.query(Job).filter(Job.account_id == acc.acc_id).first()
             db_sess.delete(account_job)
             acc_account_name = acc.account_name
-            acc_account_name = "_".join(acc_account_name.split())
-            if os.path.exists(f"media_zips/{acc_account_name}_active_media.zip"):
-                os.unlink(f"media_zips/{acc_account_name}_active_media.zip")
-            else:
-                pass
-            if os.path.exists(f"media_zips/{acc_account_name}_inactive_media.zip"):
-                os.unlink(f"media_zips/{acc_account_name}_inactive_media.zip")
-            else:
-                pass
+            acc_account_name = "_".join([i for i in acc_account_name.split() if i.isalpha()])
+            bucket_obj.objects.filter(Prefix=f"{acc_account_name}").delete()
             db_sess.delete(acc)
         current_group = db_sess.query(Group).filter(Group.id == current_group_id).first()
         db_sess.delete(current_group)
@@ -200,9 +212,9 @@ def change_account_group():
         current_group.accounts_order = json.dumps(accounts_order_current_group)
 
         current_account.group_id = new_group_id
-
         db_sess.commit()
         db_sess.close()
+        requests.post(f"{app.config.get('API_IP')}/restarting_jobs")
     if new_group_id != 0:
         return redirect(f"/{new_group_id}")
     return redirect("/")
@@ -226,12 +238,16 @@ def change_accounts_status():
                 new_job.url = account.adlib_account_link
                 new_job.time = datetime.datetime.now().strftime("%H:%M:%S")
                 db_sess.add(new_job)
+                db_sess.commit()
             else:
-                print("everything ok!")
+                pass
         else:
             account.account_is_tracked = 0
-            account_job = db_sess.query(Job).filter(Job.account_id == account.acc_id).first()
-            db_sess.delete(account_job)
+            try:
+                account_job = db_sess.query(Job).filter(Job.account_id == account.acc_id).first()
+                db_sess.delete(account_job)
+            except:
+                pass
     db_sess.commit()
     db_sess.close()
     requests.post(f"{app.config.get('API_IP')}/restarting_jobs")
@@ -270,14 +286,13 @@ def add_new_page():
         group_id = db_sess.query(Group.id).filter(Group.name == group_name).first()[0]
     else:
         group_id = 0
-
     db_sess.close()
     if account is None:
         requests.post(f"{app.config.get('API_IP')}/add_new_account/{id}/{platforms}/{media_type}/{group_id}")
         return "", 204
 
     else:
-        socketio.emit("show_modal", "OK:200")
+        socketio_.emit("show_modal", "OK:200")
         return "", 204
 
 
@@ -291,13 +306,15 @@ def ads():
                                                Advertisements.ad_status ==
                                                "Active").order_by(desc(Advertisements.ad_daysActive)).all()
     account_name, adlib_account_link = db_sess.query(Account.account_name, Account.adlib_account_link).filter(Account.acc_id == account_id).first()
-
+    account_name_for_download = "_".join([i for i in account_name.split() if i.isalpha()])
     ads_count = len(ads)
     cur_date = str(datetime.date.today())
     db_sess.close()
     return render_template("page.html", ads=ads, ads_count=ads_count, cur_date=cur_date, account_id=account_id,
                            account_name=account_name,
-                           adlib_account_link=adlib_account_link, filtered=filtered, ad_status=ad_status)
+                           adlib_account_link=adlib_account_link, filtered=filtered, ad_status=ad_status,
+                           account_name_for_download=account_name_for_download,
+                           bucket_naming=app.config.get("BUCKET_NAME"))
 
 
 @app.route('/inactive_ads/', methods=["GET", "POST"])
@@ -311,9 +328,13 @@ def inactive_ads():
     ads_count = len(ads)
     cur_date = str(datetime.date.today())
     db_sess.close()
+    account_name_for_download = "_".join([i for i in account_name.split() if i.isalpha()])
+
     return render_template("page_inactive.html", ads=ads, ads_count=ads_count, cur_date=cur_date, account_id=account_id,
                            account_name=account_name,
-                           adlib_account_link=adlib_account_link, ad_status=ad_status)
+                           adlib_account_link=adlib_account_link, ad_status=ad_status,
+                           account_name_for_download=account_name_for_download,
+                           bucket_naming=app.config.get("BUCKET_NAME"))
 
 
 @app.route('/delete_page/<int:account_id>', methods=["POST"])
@@ -333,17 +354,10 @@ def delete_page(account_id):
     db_sess.commit()
     db_sess.close()
     acc_account_name = account.account_name
-    acc_account_name = "_".join(acc_account_name.split())
-    if os.path.exists(f"media_zips/{acc_account_name}_active_media.zip"):
-        os.unlink(f"media_zips/{acc_account_name}_active_media.zip")
-    else:
-        pass
-    if os.path.exists(f"media_zips/{acc_account_name}_inactive_media.zip"):
-        os.unlink(f"media_zips/{acc_account_name}_inactive_media.zip")
-    else:
-        pass
+    acc_account_name = "_".join([i for i in acc_account_name.split() if i.isalpha()])
+    bucket_obj.objects.filter(Prefix=f"{acc_account_name}").delete()
     requests.post(f"{app.config.get('API_IP')}/delete_job/{account_id}")
-    socketio.emit('page_changed', account_id)
+    socketio_.emit('page_changed', account_id)
     return "", 204
 
 
@@ -431,10 +445,14 @@ def filter_ads():
     cur_date = str(datetime.date.today())
     account_name, adlib_account_link = db_sess.query(Account.account_name, Account.adlib_account_link).filter(Account.acc_id == account_id).first()
     db_sess.close()
+    account_name_for_download = "_".join([i for i in account_name.split() if i.isalpha()])
+
     return render_template("page.html", ads=filtered_ads,
                            ads_count=ads_count, cur_date=cur_date,
                            account_id=account_id, account_name=account_name,
-                           adlib_account_link=adlib_account_link, filtered=filtered, ad_status=ad_status)
+                           adlib_account_link=adlib_account_link, filtered=filtered, ad_status=ad_status,
+                           account_name_for_download=account_name_for_download,
+                           bucket_naming=app.config.get("BUCKET_NAME"))
 
 
 @app.route('/download_csv', methods=["POST", "GET"])
@@ -456,7 +474,7 @@ def download_csv():
             ads = db_sess.query(Advertisements).filter(Advertisements.ad_status == "Inactive",
                                                        Advertisements.account_id == account_id).all()
     filename = db_sess.query(Account.account_name).filter(Account.acc_id == account_id).first()[0]
-    filename = "_".join(filename.split())
+    filename = "_".join([i for i in filename.split() if i.isalpha()])
     csv_names_structure = ["ad_id", "ad_accountId", "start_date", "end_date", "ad_text",
                            "ad_buttonStatus", "ad_daysActive", "ad_downloadLink",
                            "ad_landingLink", "ad_platform", "ad_image"]
@@ -487,22 +505,22 @@ def download_csv():
     return response
 
 
-@app.route('/install_media', methods=["POST"])
-def install_media():
-    account_id = request.args.get("account_id")
-    account_name = request.args.get("account_name")
-    account_name = "_".join(account_name.split())
-    ad_status = request.args.get("ad_status")
-    print(ad_status)
-    if ad_status == "active":
-        socketio.emit('disable_btn', "")
-    else:
-        socketio.emit('inactive_disable_btn', "")
-    # session_.get(f"{app.config.get('API_IP')}/delete_media/{account_name}")
-    session_.get(f"{app.config.get('API_IP')}/delete_media/{account_name}?ad_status={ad_status}")
-    session_.get(f"{app.config.get('API_IP')}/install_media/{account_id}?ad_status={ad_status}")
-
-    return "", 204
+# @app.route('/install_media', methods=["POST"])
+# def install_media():
+#     account_id = request.args.get("account_id")
+#     account_name = request.args.get("account_name")
+#     account_name = "_".join([i for i in account_name.split() if i.isalpha()])
+#     ad_status = request.args.get("ad_status")
+#     print(ad_status)
+#     if ad_status == "active":
+#         socketio_.emit('disable_btn', "")
+#     else:
+#         socketio_.emit('inactive_disable_btn', "")
+#     # session_.get(f"{app.config.get('API_IP')}/delete_media/{account_name}")
+#     session_.get(f"{app.config.get('API_IP')}/delete_media/{account_name}?ad_status={ad_status}")
+#     session_.get(f"{app.config.get('API_IP')}/install_media/{account_id}?ad_status={ad_status}")
+#
+#     return "", 204
 
 
 @app.route('/download_media', methods=["POST"])
@@ -512,50 +530,39 @@ def download_media():
         account_name = request.args.get("account_name") + "_active_media"
     else:
         account_name = request.args.get("account_name") + "_inactive_media"
-
+    account_name = "_".join(account_name.split())
     return send_file(f"media_zips/{account_name}.zip", mimetype="application/zip")
 
 
-@app.route('/refresh_media/<int:account_id>', methods=["POST"])
-def refresh_media(account_id):
-    ad_status = request.args.get("ad_status")
-    if ad_status == "active":
-        socketio.emit('media_is_ready', account_id)
-    else:
-        socketio.emit('inactive_media_is_ready', account_id)
-    return "OK", 200
+# @app.route('/refresh_media/<int:account_id>', methods=["POST"])
+# def refresh_media(account_id):
+#     ad_status = request.args.get("ad_status")
+#     if ad_status == "active":
+#         socketio_.emit('media_is_ready', account_id)
+#     else:
+#         socketio_.emit('inactive_media_is_ready', account_id)
+#     return "OK", 200
 
 
 @app.route('/download_certain_media', methods=["POST"])
 def download_certain_media():
     image_id = request.args.get("image_id")
+    account_id = request.args.get("account_id")
     db_sess = db_session.create_session()
-    image_download_link, image_media_type = \
-        db_sess.query(Advertisements.ad_downloadLink,
-                      Advertisements.ad_mediaType).filter(Advertisements.ad_id_another == image_id)[0]
-
-    response = requests.get(image_download_link)
+    ad_obj = db_sess.query(Advertisements).filter(Advertisements.ad_id_another == image_id).first()
+    response = requests.get(ad_obj.ad_downloadLink)
+    image_data = response.content
     db_sess.close()
-    if response.status_code == 200:
-        image_data = response.content
-        if image_media_type == "Image":
-            return send_file(
-                BytesIO(image_data),
-                mimetype='image/jpeg',
-                as_attachment=True,
-                download_name=f'{image_id}.jpg'
-            )
-        return send_file(
-            BytesIO(image_data),
-            mimetype='video/mp4',
-            as_attachment=True,
-            download_name=f'{image_id}.mp4'
-        )
+    if ad_obj.ad_mediaType == "Video":
+        return send_file(BytesIO(image_data), as_attachment=True, mimetype='application/octet-stream',
+                         download_name=f"{image_id}.mp4")
+    return send_file(BytesIO(image_data), as_attachment=True, mimetype='application/octet-stream',
+                     download_name=f"{image_id}.jpg")
 
 
 @app.route('/refresh/<int:group_id>', methods=["POST"])
 def refresh(group_id):
-    socketio.emit('data_updated', group_id)
+    socketio_.emit('data_updated', group_id)
     return "OK", 200
 
 
@@ -569,8 +576,9 @@ def receive_html():
 
 def main():
     db_session.global_init("databases/accounts.db")
-
-    socketio.run(app, host="178.253.42.233", debug=True, allow_unsafe_werkzeug=True, use_reloader=False)
+    # from waitress import serve
+    # serve(app, host='0.0.0.0', port=5000)
+    socketio_.run(app, host="178.253.42.233", debug=True, allow_unsafe_werkzeug=True, use_reloader=False)
 
 
 if __name__ == '__main__':

@@ -29,23 +29,22 @@
                     <div class="page-btns">
                         <a href="{{url_for('ads', account_id=account_id, ad_status='active')}}" class="back-to-pages back-to-pages-in">Go to active ads</a>
                         <button class="filter-btn" id="open-filter">Filter Ads</button>
-                        <form method="post" action="{{ url_for('install_media', account_id=account_id, account_name=account_name, ad_status=ad_status)}}" id="install-media-form">
-                            <button class="install-media-btn" id="install-media-btn">Install Media</button>
-                        </form>
-                        <form  method="post" action="{{ url_for('download_csv', account_id=account_id, ad_status=ad_status)}}">
-                            <button class="download-csv-btn">Download CSV</button>
-                        </form>
-                    </div>
-                </div>
-                <div class="download-media-form__wrapper" id="download-media-form__wrapper" data-acc-name="{{account_name}}">
-                        <form method="post" class="download-media-form" action="{{ url_for('download_media', account_name=account_name, ad_status=ad_status)}}">
-                            <button class="download-media-btn" id="download-media-btn" disabled>Download Media</button>
-                        </form>
-                    <div class="loading-text__wrapper">
-                        <p class="loading-text" id="loading-text"></p>
-                    </div>
 
+                        <div class="download-media-form__wrapper" id="download-media-form__wrapper" data-acc-name="{{account_name}}">
+                        <div class="download-media-form">
+                            <a class="download-media-btn" id="download-media-btn" href="https://s3.timeweb.com/{{bucket_naming}}/{{account_name_for_download}}/{{account_name_for_download}}_inactive_media.zip" download>Download Media</a>
+                        </div>
+
+                            </div>
+                        <div class="download-csv__wrapper">
+                            <form  method="post" action="{{ url_for('download_csv', account_id=account_id, ad_status=ad_status)}}">
+                                <button class="download-csv-btn">Download CSV</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
+
+
             </section>
             <section class="ads-content__content">
                 <ul class="ads-content__content-list">

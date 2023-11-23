@@ -15,6 +15,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
 from data.jobqueue import Job
 from data.accounts import Account
+from data.groups import Group
 from data.advertisement import Advertisements
 from flask_cors import CORS
 
@@ -36,60 +37,60 @@ def delete_job(id):
     return response
 
 
-@app.route('/install_media/<int:account_id>', methods=["POST", "GET"])
-def install_media(account_id):
-    print("It's started")
-    ad_status = request.args.get("ad_status")
-    db_sess = db_session.create_session()
-    acc_name = db_sess.query(Account.account_name).filter(Account.acc_id == account_id)[0][0]
-    acc_name = "_".join(acc_name.split())
-    if ad_status == "active":
-        download_links = db_sess.query(Advertisements.ad_downloadLink, Advertisements.ad_id_another,
-                                       Advertisements.ad_mediaType) \
-            .filter(Advertisements.account_id == account_id, Advertisements.ad_status == "Active").all()
-
-        with zipfile.ZipFile(f"temporary_zips/{acc_name}_active_media.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for image_url, ad_id_another, media_type in download_links:
-                try:
-                    response = requests.get(image_url)
-
-                    if response.status_code == 200:
-                        image_data = response.content
-                        if "Video" in media_type:
-                            zipf.writestr(f'video_{ad_id_another}.mp4', image_data)
-                        else:
-                            zipf.writestr(f'image_{ad_id_another}.jpg', image_data)
-                except:
-                    continue
-        print("It's done!")
-        file_to_move = f"{acc_name}_active_media.zip"
-        source_path = os.path.join("temporary_zips", file_to_move)
-        destination_path = os.path.join("media_zips", file_to_move)
-        shutil.move(source_path, destination_path)
-    else:
-        download_links = db_sess.query(Advertisements.ad_downloadLink, Advertisements.ad_id_another,
-                                       Advertisements.ad_mediaType) \
-            .filter(Advertisements.account_id == account_id, Advertisements.ad_status == "Inactive").all()
-
-        with zipfile.ZipFile(f"temporary_zips/{acc_name}_inactive_media.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for image_url, ad_id_another, media_type in download_links:
-                try:
-                    response = requests.get(image_url)
-                    if response.status_code == 200:
-                        image_data = response.content
-                        if "Video" in media_type:
-                            zipf.writestr(f'video_{ad_id_another}.mp4', image_data)
-                        else:
-                            zipf.writestr(f'image_{ad_id_another}.jpg', image_data)
-                except requests.exceptions.MissingSchema:
-                    continue
-        print("It's done!")
-        file_to_move = f"{acc_name}_inactive_media.zip"
-        source_path = os.path.join("temporary_zips", file_to_move)
-        destination_path = os.path.join("media_zips", file_to_move)
-        shutil.move(source_path, destination_path)
-    requests.post(f"{app.config.get('BACKEND_IP')}/refresh_media/{account_id}?ad_status={ad_status}")
-    return "200"
+# @app.route('/install_media/<int:account_id>', methods=["POST", "GET"])
+# def install_media(account_id):
+#     print("It's started")
+#     ad_status = request.args.get("ad_status")
+#     db_sess = db_session.create_session()
+#     acc_name = db_sess.query(Account.account_name).filter(Account.acc_id == account_id)[0][0]
+#     acc_name = "_".join(acc_name.split())
+#     if ad_status == "active":
+#         download_links = db_sess.query(Advertisements.ad_downloadLink, Advertisements.ad_id_another,
+#                                        Advertisements.ad_mediaType) \
+#             .filter(Advertisements.account_id == account_id, Advertisements.ad_status == "Active").all()
+#
+#         with zipfile.ZipFile(f"temporary_zips/{acc_name}_active_media.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
+#             for image_url, ad_id_another, media_type in download_links:
+#                 try:
+#                     response = requests.get(image_url)
+#
+#                     if response.status_code == 200:
+#                         image_data = response.content
+#                         if "Video" in media_type:
+#                             zipf.writestr(f'video_{ad_id_another}.mp4', image_data)
+#                         else:
+#                             zipf.writestr(f'image_{ad_id_another}.jpg', image_data)
+#                 except:
+#                     continue
+#         print("It's done!")
+#         file_to_move = f"{acc_name}_active_media.zip"
+#         source_path = os.path.join("temporary_zips", file_to_move)
+#         destination_path = os.path.join("media_zips", file_to_move)
+#         shutil.move(source_path, destination_path)
+#     else:
+#         download_links = db_sess.query(Advertisements.ad_downloadLink, Advertisements.ad_id_another,
+#                                        Advertisements.ad_mediaType) \
+#             .filter(Advertisements.account_id == account_id, Advertisements.ad_status == "Inactive").all()
+#
+#         with zipfile.ZipFile(f"temporary_zips/{acc_name}_inactive_media.zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
+#             for image_url, ad_id_another, media_type in download_links:
+#                 try:
+#                     response = requests.get(image_url)
+#                     if response.status_code == 200:
+#                         image_data = response.content
+#                         if "Video" in media_type:
+#                             zipf.writestr(f'video_{ad_id_another}.mp4', image_data)
+#                         else:
+#                             zipf.writestr(f'image_{ad_id_another}.jpg', image_data)
+#                 except requests.exceptions.MissingSchema:
+#                     continue
+#         print("It's done!")
+#         file_to_move = f"{acc_name}_inactive_media.zip"
+#         source_path = os.path.join("temporary_zips", file_to_move)
+#         destination_path = os.path.join("media_zips", file_to_move)
+#         shutil.move(source_path, destination_path)
+#     requests.post(f"{app.config.get('BACKEND_IP')}/refresh_media/{account_id}?ad_status={ad_status}")
+#     return "200"
 
 
 @app.route("/delete_media/<string:account_name>", methods=["POST", "GET"])
@@ -106,20 +107,20 @@ def delete_media(account_name):
     return "200"
 
 
-@app.route('/check_fully_download/<string:account_name>', methods=["POST", "GET"])
-def check_fully_download(account_name):
-    account_name = "_".join(account_name.split())
-    print(account_name)
-    ad_status = request.args.get("ad_status")
-    if ad_status == "active":
-        file_path = f"media_zips/{account_name}_active_media.zip"
-        file_exists = os.path.exists(file_path)
-    else:
-        file_path = f"media_zips/{account_name}_inactive_media.zip"
-        file_exists = os.path.exists(file_path)
-    response = jsonify({"status": file_exists})
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+# @app.route('/check_fully_download/<string:account_name>', methods=["POST", "GET"])
+# def check_fully_download(account_name):
+#     account_name = "_".join(account_name.split())
+#     print(account_name)
+#     ad_status = request.args.get("ad_status")
+#     if ad_status == "active":
+#         file_path = f"media_zips/{account_name}_active_media.zip"
+#         file_exists = os.path.exists(file_path)
+#     else:
+#         file_path = f"media_zips/{account_name}_inactive_media.zip"
+#         file_exists = os.path.exists(file_path)
+#     response = jsonify({"status": file_exists})
+#     response.headers.add('Access-Control-Allow-Origin', '*')
+#     return response
 
 
 @app.route('/add_new_account/<int:id>/<string:platform>/<string:media>/<int:group_id>', methods=["POST"])
@@ -141,7 +142,7 @@ def restarting_jobs():
 
 
 def update_data(id, platform, media, ip, url, group_id):
-    process = mp.Process(target=parse_page, args=(id, platform, media, ip, url, group_id))
+    process = mp.Process(target=parse_page, args=(id, group_id, platform, media, ip, url))
     process.start()
 
 
@@ -150,15 +151,24 @@ def restart_all_job():
     db_sess = db_session.create_session()
     jobs = db_sess.query(Job).all()
     for job in jobs:
+        cur_acc = db_sess.query(Account).filter(Account.acc_id == job.account_id).first()
         time_split = job.time.split(":")
         trigger = CronTrigger(year="*", month="*", day="*", hour=time_split[0], minute=time_split[1], second=time_split[2])
         try:
-            scheduler.add_job(func=update_data, kwargs={"id": job.account_id,
-                                                        "url": job.url,
-                                                        "ip": app.config.get('BACKEND_IP'),
-                                                        "platform": None,
-                                                        "media": None,
-                                                        "group_id": None}, id=str(job.account_id), trigger=trigger)
+            if cur_acc is None:
+                scheduler.add_job(func=update_data, kwargs={"id": job.account_id,
+                                                            "url": job.url,
+                                                            "ip": app.config.get('BACKEND_IP'),
+                                                            "platform": None,
+                                                            "media": None,
+                                                            "group_id": 0}, id=str(job.account_id), trigger=trigger)
+            else:
+                scheduler.add_job(func=update_data, kwargs={"id": job.account_id,
+                                                            "url": job.url,
+                                                            "ip": app.config.get('BACKEND_IP'),
+                                                            "platform": None,
+                                                            "media": None,
+                                                            "group_id": cur_acc.acc_id}, id=str(job.account_id), trigger=trigger)
         except ConflictingIdError:
             scheduler.resume_job(str(job.account_id))
 
@@ -173,3 +183,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
