@@ -171,6 +171,12 @@ def parse_page(id: str, group_id: int, platform=None, media=None, ip=None, url=N
         original_zip_inactive = BytesIO()
     additional_files_active = {}
     additional_files_inactive = {}
+    account_name_image = requests.get(account.image)
+    if account_name_image.status_code == 200:
+        account_name_image_data = account_name_image.content
+        key = f"{account_name}/{account_name}.jpg"
+        bucket_obj.put_object(Key=key, Body=BytesIO(account_name_image_data))
+        account.image = f"https://s3.timeweb.com/{bucket_name}/{account_name}/{account_name}.jpg"
     for ad in account.ads:
         if int(ad.id) in old_ads_id:
             old_ad = db_sess.query(Advertisements).filter(Advertisements.ad_id_another == ad.id).first()
@@ -254,6 +260,8 @@ def parse_page(id: str, group_id: int, platform=None, media=None, ip=None, url=N
     try:
         accounts_order = json.loads(group.accounts_order)
     except:
+        accounts_order = []
+    if accounts_order is None:
         accounts_order = []
     if int(account_id) not in accounts_order:
         accounts_order.append(int(account_id))
