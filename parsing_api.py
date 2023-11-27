@@ -127,7 +127,7 @@ def delete_media(account_name):
 def add_new_account(id, platform, media, group_id):
     process = mp.Process(target=parse_page, args=(id, group_id, platform, media, app.config.get('BACKEND_IP')))
     process.start()
-    scheduler.add_job(func=update_data, args=(id, platform, media, app.config.get('BACKEND_IP'), None, group_id),
+    scheduler.add_job(func=update_data, args=(id, group_id, platform, media, app.config.get('BACKEND_IP'), None),
                       id=str(id),
                       trigger=IntervalTrigger(days=1))
     response = jsonify({"message": "OK"})
