@@ -168,7 +168,7 @@ def restart_all_job():
                                                             "ip": app.config.get('BACKEND_IP'),
                                                             "platform": None,
                                                             "media": None,
-                                                            "group_id": cur_acc.acc_id}, id=str(job.account_id), trigger=trigger)
+                                                            "group_id": cur_acc.group_id}, id=str(job.account_id), trigger=trigger)
         except ConflictingIdError:
             scheduler.resume_job(str(job.account_id))
 
