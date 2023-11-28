@@ -309,11 +309,12 @@ def ads():
     account_name_for_download = "_".join([i for i in account_name.split() if i.isalpha()])
     ads_count = len(ads)
     cur_date = str(datetime.date.today())
+    group_id = db_sess.query(Account.group_id).filter(Account.acc_id == account_id).first()[0]
     db_sess.close()
     return render_template("page.html", ads=ads, ads_count=ads_count, cur_date=cur_date, account_id=account_id,
                            account_name=account_name,
                            adlib_account_link=adlib_account_link, filtered=filtered, ad_status=ad_status,
-                           account_name_for_download=account_name_for_download,
+                           account_name_for_download=account_name_for_download, group_id=group_id,
                            bucket_naming=app.config.get("BUCKET_NAME"))
 
 
@@ -327,6 +328,7 @@ def inactive_ads():
     account_name, adlib_account_link = db_sess.query(Account.account_name, Account.adlib_account_link).filter(Account.acc_id == account_id).first()
     ads_count = len(ads)
     cur_date = str(datetime.date.today())
+    group_id = db_sess.query(Account.group_id).filter(Account.acc_id == account_id).first()[0]
     db_sess.close()
     account_name_for_download = "_".join([i for i in account_name.split() if i.isalpha()])
 
@@ -334,7 +336,7 @@ def inactive_ads():
                            account_name=account_name,
                            adlib_account_link=adlib_account_link, ad_status=ad_status,
                            account_name_for_download=account_name_for_download,
-                           bucket_naming=app.config.get("BUCKET_NAME"))
+                           bucket_naming=app.config.get("BUCKET_NAME"), group_id=group_id)
 
 
 @app.route('/delete_page/<int:account_id>', methods=["POST"])
@@ -441,6 +443,7 @@ def filter_ads():
     filtered_id = [i.ad_id_another for i in filtered_ads]
     session["sorted_ids"] = filtered_id
     ads_count = len(filtered_ads)
+    group_id = db_sess.query(Account.group_id).filter(Account.acc_id == account_id).first()[0]
 
     cur_date = str(datetime.date.today())
     account_name, adlib_account_link = db_sess.query(Account.account_name, Account.adlib_account_link).filter(Account.acc_id == account_id).first()
@@ -452,7 +455,7 @@ def filter_ads():
                            account_id=account_id, account_name=account_name,
                            adlib_account_link=adlib_account_link, filtered=filtered, ad_status=ad_status,
                            account_name_for_download=account_name_for_download,
-                           bucket_naming=app.config.get("BUCKET_NAME"))
+                           bucket_naming=app.config.get("BUCKET_NAME"), group_id=group_id)
 
 
 @app.route('/download_csv', methods=["POST", "GET"])
