@@ -268,6 +268,9 @@ def parse_page(id: str, group_id: int, platform=None, media=None, ip=None, url=N
     group.accounts_order = json.dumps(accounts_order)
     db_sess.commit()
     db_sess.close()
+    account.total_ads = len(db_sess.query(Advertisements).filter(Advertisements.account_id == account.id).all())
+    account.active_ads = len(db_sess.query(Advertisements).filter(Advertisements.account_id == account.id,
+                                                                  Advertisements.ad_status == "Active").all())
     try:
         db_sess = db_session.create_session()
         api_account = ApiAccount()
