@@ -47,13 +47,22 @@ s3 = boto3.resource(
         config=Config(s3={'addressing_style': 'path'})
     )
 
+s3_client = boto3.client(
+    's3',
+    endpoint_url='https://s3.timeweb.com',
+    region_name='ru-1',
+    aws_access_key_id='it27776',
+    aws_secret_access_key='1cad6c15403631a01cc0bf26a5ce1524',
+    config=Config(s3={'addressing_style': 'path'})
+)
+
 bucket_name = "7b3ae2a6-1e521fbf-430f-4275-aea8-858d0059469b"
 bucket_obj = s3.Bucket(bucket_name)
 
 
 def download_zip_from_s3(s3_key):
     try:
-        response = bucket_obj.Object(Key=s3_key)
+        response = s3_client.get_object(Bucket=bucket_name, Key=s3_key)
         zip_data = response['Body'].read()
         return BytesIO(zip_data)
     except:
@@ -164,9 +173,7 @@ def parse_page(id: str, group_id: int, platform=None, media=None, ip=None, url=N
     account_name = "_".join([i for i in account.name.split() if i.isalpha()])
 
     original_zip_active = download_zip_from_s3(f"{account_name}/{account_name}_active_media.zip")
-    print(original_zip_active)
     original_zip_inactive = download_zip_from_s3(f"{account_name}/{account_name}_inactive_media.zip")
-    print(original_zip_inactive)
     if original_zip_active is None:
         original_zip_active = BytesIO()
     if original_zip_inactive is None:
@@ -200,7 +207,10 @@ def parse_page(id: str, group_id: int, platform=None, media=None, ip=None, url=N
                 api_ads.ad_platform = ad.platforms
                 api_ads.account_id = account.id
                 db_sess.add(api_ads)
-
+            else:
+                old_ad = db_sess.query(Advertisements).filter(Advertisements.ad_id_another == ad.id).first()
+                old_ad.ad_daysActive = ad.duration
+                db_sess.commit()
         elif int(ad.id) not in old_ads_id:
             api_ads = Advertisements()
             api_ads.ad_id_another = ad.id
