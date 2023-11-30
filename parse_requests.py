@@ -164,7 +164,9 @@ def parse_page(id: str, group_id: int, platform=None, media=None, ip=None, url=N
     account_name = "_".join([i for i in account.name.split() if i.isalpha()])
 
     original_zip_active = download_zip_from_s3(f"{account_name}/{account_name}_active_media.zip")
+    print(original_zip_active)
     original_zip_inactive = download_zip_from_s3(f"{account_name}/{account_name}_inactive_media.zip")
+    print(original_zip_inactive)
     if original_zip_active is None:
         original_zip_active = BytesIO()
     if original_zip_inactive is None:
