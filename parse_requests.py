@@ -60,11 +60,13 @@ bucket_name = "7b3ae2a6-1e521fbf-430f-4275-aea8-858d0059469b"
 bucket_obj = s3.Bucket(bucket_name)
 
 
-def download_zip_from_s3(s3_key):
+def download_zip_from_s3(s3_key, account_name, status):
     try:
-        response = s3_client.get_object(Bucket=bucket_name, Key=s3_key)
-        zip_data = response['Body'].read()
-        return BytesIO(zip_data)
+        if status == "Active":
+            s3_client.download_file(bucket_name, s3_key, f"temporary_zips/{account_name}_active_media.zip")
+        else:
+            s3_client.download_file(bucket_name, s3_key, f"temporary_zips/{account_name}_inactive_media.zip")
+        return "OK"
     except:
         return None
 
@@ -74,15 +76,10 @@ def modify_zip(zip_data, additional_files):
         for file_path, file_content in additional_files.items():
             original_zip.writestr(file_path, file_content)
 
-    modified_zip_data = BytesIO(zip_data.getvalue())
 
-    return modified_zip_data
+def upload_zip_to_s3(updated_zip_path, s3_path):
+    s3_client.upload_file(updated_zip_path, bucket_name, s3_path)
 
-
-def upload_zip_to_s3(key, zip_data):
-
-    zip_data.seek(0)
-    bucket_obj.put_object(Key=key, Body=zip_data)
 
 
 # start
@@ -171,13 +168,9 @@ def parse_page(id: str, group_id: int, platform=None, media=None, ip=None, url=N
     old_ads_id = db_sess.query(Advertisements.ad_id_another).all()
     old_ads_id = [ad[0] for ad in old_ads_id]
     account_name = "_".join([i for i in account.name.split() if i.isalpha()])
-
-    original_zip_active = download_zip_from_s3(f"{account_name}/{account_name}_active_media.zip")
-    original_zip_inactive = download_zip_from_s3(f"{account_name}/{account_name}_inactive_media.zip")
-    if original_zip_active is None:
-        original_zip_active = BytesIO()
-    if original_zip_inactive is None:
-        original_zip_inactive = BytesIO()
+    original_zip_active = download_zip_from_s3(f"{account_name}/{account_name}_active_media.zip", account_name, "Active")
+    original_zip_inactive = download_zip_from_s3(f"{account_name}/{account_name}_inactive_media.zip", account_name,
+                                                 "Inactive")
     additional_files_active = {}
     additional_files_inactive = {}
     account_name_image = requests.get(account.image)
@@ -263,10 +256,27 @@ def parse_page(id: str, group_id: int, platform=None, media=None, ip=None, url=N
             except:
                 pass
             db_sess.add(api_ads)
-    modified_zip_data_active = modify_zip(original_zip_active, additional_files_active)
-    modified_zip_data_inactive = modify_zip(original_zip_inactive, additional_files_inactive)
-    upload_zip_to_s3(f"{account_name}/{account_name}_active_media.zip", modified_zip_data_active)
-    upload_zip_to_s3(f"{account_name}/{account_name}_inactive_media.zip", modified_zip_data_inactive)
+    if original_zip_active is None:
+        with zipfile.ZipFile(f"temporary_zips/{account_name}_active_media.zip", 'w') as zip_file:
+            pass
+        modify_zip(f"temporary_zips/{account_name}_active_media.zip", additional_files_active)
+    else:
+        modify_zip(f"temporary_zips/{account_name}_active_media.zip", additional_files_active)
+
+    if original_zip_inactive is None:
+        with zipfile.ZipFile(f"temporary_zips/{account_name}_inactive_media.zip", 'w') as zip_file:
+            pass
+        modify_zip(f"temporary_zips/{account_name}_inactive_media.zip", additional_files_inactive)
+    else:
+        modify_zip(f"temporary_zips/{account_name}_inactive_media.zip", additional_files_inactive)
+
+    upload_zip_to_s3(f"temporary_zips/{account_name}_active_media.zip",
+                     f"{account_name}/{account_name}_active_media.zip")
+    upload_zip_to_s3(f"temporary_zips/{account_name}_inactive_media.zip",
+                     f"{account_name}/{account_name}_inactive_media.zip")
+
+    os.remove(f"temporary_zips/{account_name}_active_media.zip")
+    os.remove(f"temporary_zips/{account_name}_inactive_media.zip")
 
     group = db_sess.query(ApiGroup).filter(ApiGroup.id == group_id).first()
     try:
