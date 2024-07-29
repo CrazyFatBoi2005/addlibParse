@@ -104,11 +104,12 @@ class Ad:
                                                    "x1i64zmx").get_text()
         except:
             self.status = soup.find("span",
-                                    class_="x8t9es0 xw23nyj xo1l8bm x63nzvj x108nfp6 xq9mrsl x1h4wwuj xeuugli x1i64zmx").get_text()
-        """
-        date = soup.find_all("span", class_="x8t9es0 xw23nyj xo1l8bm x63nzvj x108nfp6 xq9mrsl x1h4wwuj xeuugli")[1].get_text().split(' ')
+                                    class_="x8t9es0 xw23nyj xo1l8bm x63nzvj x108nfp6 xq9mrsl x1h4wwuj xeuugli x1i64zmx").get_text()"""
+        date = soup.find_all("div", class_="x3nfvp2 x1e56ztr")[2].get_text().split(' ')
         # date parse
-        date = [i for i in date if i.isdigit() or i in dates or i in dates_eng]
+        print(date)
+        date = [i for i in date if i.isdigit() or i in dates or i in dates_eng or i.isalnum()]
+        print(date)
         # print(date)
         if len(date) == 3:
             day, month, year = int(date[0]), dates[date[1]], int(date[2])
@@ -126,7 +127,12 @@ class Ad:
             self.duration = str((self.end_date - self.start_date).days)
             self.start_date = str(self.start_date)
             self.status = "Inactive"
-
+        else:
+            self.start_date = datetime.date.today()
+            self.duration = str(0)
+            self. start_date = str(self.start_date)
+            self.end_date = datetime.date.today()
+            self.status = "Inactive"
         self.platforms = []
         for platform in soup.find_all("div", class_="xtwfq29"):
             if platform['style'] in platform_styles.keys():
