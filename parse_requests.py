@@ -104,10 +104,11 @@ def parse_page(id: str, group_id: int, platform=None, media=None, ip=None, url=N
     else:
         url_with_filters = url
     # фильтры пользователя в filters
-    url = f"https://www.facebook.com/ads/library/?active_status=all" \
-          f"&ad_type=all&country=ALL&view_all_page_id={id}" \
-          f"&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&search_type=page&media_type=all "
-    account = Account(url)
+    # url = f"https://www.facebook.com/ads/library/?active_status=all" \
+    #       f"&ad_type=all&country=ALL&view_all_page_id={id}" \
+    #       f"&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&search_type=page&media_type=all "
+    # account = Account(url)
+    account = Account(url_with_filters)
     options = Options()
     options.add_argument("--headless")
     profile_directory = r'%AppData%\Mozilla\Firefox\Profiles\42ryon9o.adParseProf'
@@ -119,6 +120,8 @@ def parse_page(id: str, group_id: int, platform=None, media=None, ip=None, url=N
     try:
         _ = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//div[@class='_7jvw x2izyaf x1hq5gj4 x1d52u69']")))
     except TimeoutException:
+        time.sleep(1)
+        driver.refresh()
         print("empty account")
     time.sleep(1)
     account.name = driver.find_element(By.XPATH, "//div[@class='x8t9es0 x1ldc4aq x1xlr1w8 x1cgboj8 x4hq6eo xq9mrsl x1yc453h x1h4wwuj xeuugli']").text
