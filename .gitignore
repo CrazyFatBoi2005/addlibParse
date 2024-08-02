@@ -168,3 +168,6 @@ databases/accounts.db
 *.iml
 *.iml
 temporary_zips/Yoga-Go
+/.idea
+/.idea
+test.py
