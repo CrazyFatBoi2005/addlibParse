@@ -107,10 +107,10 @@ class Ad:
                                     class_="x8t9es0 xw23nyj xo1l8bm x63nzvj x108nfp6 xq9mrsl x1h4wwuj xeuugli x1i64zmx").get_text()"""
         date = soup.find_all("div", class_="x3nfvp2 x1e56ztr")[2].get_text().split(' ')
         # date parse
-        date = [i for i in date if i.isdigit() or i in dates or i in dates_eng or i.isalnum()]
-        date = [i if i.isdigit() else i[:4] for i in date]
         print(date)
-        # print(date)
+        date = [i[:4] for i in date if i.isdigit() or i in dates or i in dates_eng or i[:4].isdigit()]
+        print(date)
+
         if len(date) == 3:
             day, month, year = int(date[0]), dates[date[1]], int(date[2])
             self.start_date = datetime.date(year, month, day)
