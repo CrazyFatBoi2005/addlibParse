@@ -176,6 +176,11 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
     account.active_ads = account.count_active()
     driver.close()
     driver.quit()
+    try:
+        requests.get(req_url_end)
+        time.sleep(5)
+    except:
+        pass
     print(f"End {account.name}.")
     account_id = account.id
 
