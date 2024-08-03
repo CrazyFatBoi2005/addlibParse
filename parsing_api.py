@@ -127,57 +127,54 @@ def delete_media(account_name):
 def add_new_account(id, platform, media, group_id):
     process = mp.Process(target=parse_page, args=(id, group_id, platform, media, app.config.get('BACKEND_IP')))
     process.start()
-    scheduler.add_job(func=update_data, args=(id, group_id, platform, media, app.config.get('BACKEND_IP'), None),
-                      id=str(id),
-                      trigger=IntervalTrigger(days=1))
     response = jsonify({"message": "OK"})
     response.status_code = 200
     return response
 
 
-@app.route('/restarting_jobs', methods=["POST"])
-def restarting_jobs():
-    restart_all_job()
-    return "", 204
+# @app.route('/restarting_jobs', methods=["POST"])
+# def restarting_jobs():
+#     restart_all_job()
+#     return "", 204
 
 
-def update_data(id, platform, media, ip, url, group_id):
-    process = mp.Process(target=parse_page, args=(id, group_id, platform, media, ip, url))
-    process.start()
+# def update_data(id, platform, media, ip, url, group_id):
+#     process = mp.Process(target=parse_page, args=(id, group_id, platform, media, ip, url))
+#     process.start()
 
 
-def restart_all_job():
-    db_session.global_init("databases/accounts.db")
-    db_sess = db_session.create_session()
-    jobs = db_sess.query(Job).all()
-    for job in jobs:
-        cur_acc = db_sess.query(Account).filter(Account.acc_id == job.account_id).first()
-        time_split = job.time.split(":")
-        trigger = CronTrigger(year="*", month="*", day="*", hour=time_split[0], minute=time_split[1], second=time_split[2])
-        try:
-            if cur_acc is None:
-                scheduler.add_job(func=update_data, kwargs={"id": job.account_id,
-                                                            "url": job.url,
-                                                            "ip": app.config.get('BACKEND_IP'),
-                                                            "platform": None,
-                                                            "media": None,
-                                                            "group_id": 0}, id=str(job.account_id), trigger=trigger)
-            else:
-                scheduler.add_job(func=update_data, kwargs={"id": job.account_id,
-                                                            "url": job.url,
-                                                            "ip": app.config.get('BACKEND_IP'),
-                                                            "platform": None,
-                                                            "media": None,
-                                                            "group_id": cur_acc.group_id}, id=str(job.account_id), trigger=trigger)
-        except ConflictingIdError:
-            scheduler.resume_job(str(job.account_id))
+# def restart_all_job():
+#     db_session.global_init("databases/accounts.db")
+#     db_sess = db_session.create_session()
+#     jobs = db_sess.query(Job).all()
+#     for job in jobs:
+#         cur_acc = db_sess.query(Account).filter(Account.acc_id == job.account_id).first()
+#         time_split = job.time.split(":")
+#         trigger = CronTrigger(year="*", month="*", day="*", hour=time_split[0], minute=time_split[1], second=time_split[2])
+#         try:
+#             if cur_acc is None:
+#                 scheduler.add_job(func=update_data, kwargs={"id": job.account_id,
+#                                                             "url": job.url,
+#                                                             "ip": app.config.get('BACKEND_IP'),
+#                                                             "platform": None,
+#                                                             "media": None,
+#                                                             "group_id": 0}, id=str(job.account_id), trigger=trigger)
+#             else:
+#                 scheduler.add_job(func=update_data, kwargs={"id": job.account_id,
+#                                                             "url": job.url,
+#                                                             "ip": app.config.get('BACKEND_IP'),
+#                                                             "platform": None,
+#                                                             "media": None,
+#                                                             "group_id": cur_acc.group_id}, id=str(job.account_id), trigger=trigger)
+#         except ConflictingIdError:
+#             scheduler.resume_job(str(job.account_id))
 
 
 def main():
     db_session.global_init("databases/accounts.db")
-    scheduler.start()
-    restart_all_job()
-    print("job_rest")
+    # scheduler.start()
+    # restart_all_job()
+    # print("job_rest")
     app.run(host="178.253.42.233", port=8800, debug=True, use_reloader=False)
 
 

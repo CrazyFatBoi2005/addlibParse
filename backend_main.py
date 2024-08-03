@@ -4,8 +4,8 @@ import io
 import json
 
 import requests
-import socketio
 from flask import Flask, render_template, redirect, request, Response, session, send_file, jsonify
+from flask_apscheduler import APScheduler
 from flask_socketio import SocketIO
 from sqlalchemy import desc
 
@@ -19,6 +19,8 @@ from botocore.client import Config
 from io import BytesIO
 from requests_futures.sessions import FuturesSession
 
+from parse_requests import cycle_parse_page
+
 app = Flask(__name__)
 session_ = FuturesSession()
 app.config['SECRET_KEY'] = "NikitinPlaxin315240"
@@ -26,6 +28,8 @@ app.config['BUCKET_NAME'] = "7b3ae2a6-1e521fbf-430f-4275-aea8-858d0059469b"
 app.config['API_IP'] = "http://178.253.42.233:8800"
 socketio_ = SocketIO(app)
 socketio_.init_app(app)
+flask_scheduler = APScheduler()
+
 
 s3 = boto3.resource(
         's3',
@@ -581,6 +585,8 @@ def main():
     db_session.global_init("databases/accounts.db")
     # from waitress import serve
     # serve(app, host='0.0.0.0', port=5000)
+    flask_scheduler.add_job(id='Start Default Task', func=cycle_parse_page,
+                            trigger='cron', hour=0, minute=1, second=0)
     socketio_.run(app, host="178.253.42.233", debug=True, allow_unsafe_werkzeug=True, use_reloader=False)
 
 

@@ -81,21 +81,20 @@ def upload_zip_to_s3(updated_zip_path, s3_path):
     s3_client.upload_file(updated_zip_path, bucket_name, s3_path)
 
 
-
 # start
-def parse_page(id: str, group_id: int, platform=None, media=None, ip=None, url=None):
+def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=None):
     db_session.global_init("databases/accounts.db")
     if url is None:
         url_with_filters = \
             f"https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&" \
-            f"view_all_page_id={id}{rename_filter.get(platform, '')}" \
+            f"view_all_page_id={id_}{rename_filter.get(platform, '')}" \
             f"&sort_data[direction]=desc&" \
             f"sort_data[mode]=relevancy_monthly_grouped&search_type=page{rename_filter[media]}"
         db_sess = db_session.create_session()
-        old_job = db_sess.query(Job).filter(Job.account_id == id).first()
+        old_job = db_sess.query(Job).filter(Job.account_id == id_).first()
         if old_job is None:
             job = Job()
-            job.account_id = id
+            job.account_id = id_
             job.url = url_with_filters
             time_now = datetime.datetime.now().time()
             job.time = ":".join([str(time_now.hour), str(time_now.minute), str(time_now.second)])
@@ -117,13 +116,12 @@ def parse_page(id: str, group_id: int, platform=None, media=None, ip=None, url=N
     options.profile = profile
     driver = webdriver.Firefox(options=options)
     driver.get(url_with_filters)
+    time.sleep(1)
     try:
         _ = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//div[@class='_7jvw x2izyaf x1hq5gj4 x1d52u69']")))
     except TimeoutException:
-        time.sleep(1)
         driver.refresh()
-        print("empty account")
-    time.sleep(1)
+        time.sleep(1)
     account.name = driver.find_element(By.XPATH, "//div[@class='x8t9es0 x1ldc4aq x1xlr1w8 x1cgboj8 x4hq6eo xq9mrsl x1yc453h x1h4wwuj xeuugli']").text
     try:
         account.nickname = "@" + driver.find_elements(By.XPATH, "//a[@class='xt0psk2 x1hl2dhg xt0b8zv x8t9es0 x1fvot60 xxio538 xjnfcd9 xq9mrsl x1yc453h x1h4wwuj x1fcty0u']")[-1].get_attribute("href").split("/")[-1]
@@ -164,6 +162,7 @@ def parse_page(id: str, group_id: int, platform=None, media=None, ip=None, url=N
 
     account.active_ads = account.count_active()
     driver.close()
+    driver.quit()
     print(f"End {account.name}.")
     account_id = account.id
 
@@ -321,3 +320,14 @@ def parse_page(id: str, group_id: int, platform=None, media=None, ip=None, url=N
     db_sess.close()
     requests.post(f"{ip}/refresh/{group_id}")
     print(f"Account {account.name} in database, refresh page")
+
+
+def cycle_parse_page():
+    db_session.global_init("databases/accounts.db")
+    db_sess = db_session.create_session()
+
+    accounts_list = db_sess.query(ApiAccount.acc_id, ApiAccount.group_id, ApiAccount.adlib_account_link).all()
+    db_sess.close()
+    for acc in accounts_list:
+        parse_page(id_=acc[0], group_id=acc[1], url=acc[2])
+
