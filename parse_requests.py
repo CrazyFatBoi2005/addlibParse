@@ -109,7 +109,7 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
     # account = Account(url)
     account = Account(url_with_filters)
     options = Options()
-    options.add_argument("--headless")
+    # options.add_argument("--headless")
     profile_directory = r'%AppData%\Mozilla\Firefox\Profiles\42ryon9o.adParseProf'
     # profile_directory = r'%AppData%\Mozilla\Firefox\Profiles\nyilpyl1.adlibParsingProf'
     profile = webdriver.FirefoxProfile(os.path.expandvars(profile_directory))
@@ -329,5 +329,6 @@ def cycle_parse_page():
     accounts_list = db_sess.query(ApiAccount.acc_id, ApiAccount.group_id, ApiAccount.adlib_account_link).all()
     db_sess.close()
     for acc in accounts_list:
+        print(acc)
         parse_page(id_=acc[0], group_id=acc[1], url=acc[2])
 
