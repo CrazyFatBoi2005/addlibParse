@@ -128,6 +128,8 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
     driver = webdriver.Chrome(options=options)
     driver.get(url_with_filters)
     time.sleep(1)
+    driver.get(url_with_filters)
+    time.sleep(1)
     try:
         _ = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//div[@class='_7jvw x2izyaf x1hq5gj4 x1d52u69']")))
     except TimeoutException:
