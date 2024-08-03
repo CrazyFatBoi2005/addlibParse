@@ -11,7 +11,7 @@ from parse_api.classes import Account, Ad
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from data.accounts import Account as ApiAccount
@@ -108,13 +108,24 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
     #       f"&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&search_type=page&media_type=all "
     # account = Account(url)
     account = Account(url_with_filters)
-    options = Options()
     # options.add_argument("--headless")
-    profile_directory = r'%AppData%\Mozilla\Firefox\Profiles\42ryon9o.adParseProf'
     # profile_directory = r'%AppData%\Mozilla\Firefox\Profiles\nyilpyl1.adlibParsingProf'
-    profile = webdriver.FirefoxProfile(os.path.expandvars(profile_directory))
-    options.profile = profile
-    driver = webdriver.Firefox(options=options)
+    profile_id = "432137886"
+    req_url_start = f"http://localhost:3001/v1.0/browser_profiles/{profile_id}/start?automation=1"
+    req_url_end = f"http://localhost:3001/v1.0/browser_profiles/{profile_id}/stop"
+    try:
+        requests.get(req_url_end)
+        time.sleep(5)
+    except:
+        pass
+    response = requests.get(req_url_start)
+    time.sleep(2)
+    response_json = response.json()
+    print(response_json)
+    port = response_json['automation']['port']
+    options = Options()
+    options.debugger_address = f'127.0.0.1:{port}'
+    driver = webdriver.Chrome(options=options)
     driver.get(url_with_filters)
     time.sleep(1)
     try:
@@ -320,6 +331,7 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
     db_sess.close()
     requests.post(f"{ip}/refresh/{group_id}")
     print(f"Account {account.name} in database, refresh page")
+
 
 
 def cycle_parse_page():
