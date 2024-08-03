@@ -336,9 +336,9 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
         db_sess.commit()
         print(f"Account {account.name} already exists")
     db_sess.close()
-    requests.post(f"{ip}/refresh/{group_id}")
+    if ip:
+        requests.post(f"{ip}/refresh/{group_id}")
     print(f"Account {account.name} in database, refresh page")
-
 
 
 def cycle_parse_page():
