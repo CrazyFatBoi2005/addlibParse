@@ -41,6 +41,8 @@ dates_eng = {
 }
 
 
+# Deleted ad div
+# class_="x6s0dn4 x14sctaw x9f619 x78zum5 xdt5ytf xl56j7k x1ymw6g x1xmf6yo xexx8yu x1uv0uf2 x18d9i69 xtt4iyq"
 class Ad:
     def __init__(self, element):
         self.image = ""
@@ -107,9 +109,7 @@ class Ad:
                                     class_="x8t9es0 xw23nyj xo1l8bm x63nzvj x108nfp6 xq9mrsl x1h4wwuj xeuugli x1i64zmx").get_text()"""
         date = soup.find_all("div", class_="x3nfvp2 x1e56ztr")[2].get_text().split(' ')
         # date parse
-        print(date)
         date = [i[:4] for i in date if i.isdigit() or i in dates or i in dates_eng or i[:4].isdigit()]
-        print(date)
 
         if len(date) == 3:
             day, month, year = int(date[0]), dates[date[1]], int(date[2])
