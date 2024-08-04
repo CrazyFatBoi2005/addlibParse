@@ -371,5 +371,8 @@ def cycle_parse_page():
         try:
             parse_page(id_=acc[0], group_id=acc[1], url=acc[2])
         except Exception as e:
-            logging.error(f"Account Name: {acc[3]}\nFell with an exception: {e}\nFull error info: {traceback.format_exc()}")
+            if e is not KeyboardInterrupt:
+                logging.error(f"Account Name: {acc[3]}\nFell with an exception: {e}\nFull error info: {traceback.format_exc()}")
+            else:
+                break
 
