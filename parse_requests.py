@@ -1,7 +1,9 @@
 import json
 import os
 import time
+import traceback
 import zipfile
+import logging
 from zipfile import ZipFile
 
 import requests
@@ -324,7 +326,6 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
         api_account.adlib_account_link = account.link
         api_account.account_activeAds = account.active_ads
         api_account.account_socialMedia_link = account.link
-        print(f"group_id {group_id}")
         api_account.group_id = group_id
         db_sess.add(api_account)
         db_sess.commit()
@@ -342,12 +343,29 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
 
 
 def cycle_parse_page():
+    current_date = datetime.now().strftime("%d-%m")
+    log_dir = "logs"
+    # Формируем имя файла лога
+    log_filename = f"{current_date}.log"
+    log_filepath = os.path.join(log_dir, log_filename)
+
+    # Настраиваем логирование
+    logging.basicConfig(
+        level=logging.INFO,  # Уровень логирования
+        format='%(asctime)s - %(levelname)s - %(message)s',  # Формат сообщений
+        handlers=[
+            logging.FileHandler(log_filepath),  # Логирование в файл
+            logging.StreamHandler()  # Логирование в консоль
+        ]
+    )
     db_session.global_init("databases/accounts.db")
     db_sess = db_session.create_session()
 
-    accounts_list = db_sess.query(ApiAccount.acc_id, ApiAccount.group_id, ApiAccount.adlib_account_link).all()
+    accounts_list = db_sess.query(ApiAccount.acc_id, ApiAccount.group_id, ApiAccount.adlib_account_link, ApiAccount.account_name).all()
     db_sess.close()
     for acc in accounts_list:
-        print(acc)
-        parse_page(id_=acc[0], group_id=acc[1], url=acc[2])
+        try:
+            parse_page(id_=acc[0], group_id=acc[1], url=acc[2])
+        except Exception as e:
+            logging.error(f"Account Name: {acc[3]}\nFell with an exception: {e}\nFull error info: {traceback.format_exc()}")
 

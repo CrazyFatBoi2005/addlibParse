@@ -171,3 +171,5 @@ temporary_zips/Yoga-Go
 /.idea
 /.idea
 test.py
+.idea/misc.xml
+.idea/addlibParse.iml
