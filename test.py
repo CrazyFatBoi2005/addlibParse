@@ -1,10 +1,14 @@
-from data import db_session
-from data.accounts import Account as ApiAccount
+from seleniumwire import webdriver  # Import from seleniumwire
 
-db_session.global_init("databases/accounts.db")
-db_sess = db_session.create_session()
+# Create a new instance of the Chrome driver
+driver = webdriver.Chrome()
 
+# Go to the Google home page
+driver.get('https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&media_type=all&search_type=page&view_all_page_id=51212153078')
 
-accounts_list = db_sess.query(ApiAccount.acc_id, ApiAccount.group_id, ApiAccount.adlib_account_link).all()
-
-print(accounts_list)
+# Access requests via the `requests` attribute
+for request in driver.requests:
+    if request.response:
+        print(
+            request.url
+        )
