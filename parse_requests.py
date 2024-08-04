@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import time
 import traceback
 import datetime
@@ -62,26 +63,25 @@ s3_client = boto3.client(
 bucket_name = "7b3ae2a6-1e521fbf-430f-4275-aea8-858d0059469b"
 bucket_obj = s3.Bucket(bucket_name)
 
-
-def download_zip_from_s3(s3_key, account_name, status):
-    try:
-        if status == "Active":
-            s3_client.download_file(bucket_name, s3_key, f"temporary_zips/{account_name}_active_media.zip")
-        else:
-            s3_client.download_file(bucket_name, s3_key, f"temporary_zips/{account_name}_inactive_media.zip")
-        return "OK"
-    except:
-        return None
-
-
-def modify_zip(zip_data, additional_files):
-    with zipfile.ZipFile(zip_data, 'a') as original_zip:
-        for file_path, file_content in additional_files.items():
-            original_zip.writestr(file_path, file_content)
+# def download_zip_from_s3(s3_key, account_name, status):
+#     try:
+#         if status == "Active":
+#             s3_client.download_file(bucket_name, s3_key, f"temporary_zips/{account_name}_active_media.zip")
+#         else:
+#             s3_client.download_file(bucket_name, s3_key, f"temporary_zips/{account_name}_inactive_media.zip")
+#         return "OK"
+#     except:
+#         return None
 
 
-def upload_zip_to_s3(updated_zip_path, s3_path):
-    s3_client.upload_file(updated_zip_path, bucket_name, s3_path)
+# def modify_zip(zip_data, additional_files):
+#     with zipfile.ZipFile(zip_data, 'a') as original_zip:
+#         for file_path, file_content in additional_files.items():
+#             original_zip.writestr(file_path, file_content)
+#
+#
+# def upload_zip_to_s3(updated_zip_path, s3_path):
+#     s3_client.upload_file(updated_zip_path, bucket_name, s3_path)
 
 
 # start
@@ -194,9 +194,14 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
     old_ads_id = db_sess.query(Advertisements.ad_id_another).all()
     old_ads_id = [ad[0] for ad in old_ads_id]
     account_name = "_".join([i for i in account.name.split() if i.isalpha()])
-    original_zip_active = download_zip_from_s3(f"{account_name}/{account_name}_active_media.zip", account_name, "Active")
-    original_zip_inactive = download_zip_from_s3(f"{account_name}/{account_name}_inactive_media.zip", account_name,
-                                                 "Inactive")
+
+    parent_directory = "temporary_storage"
+    new_directory = os.path.join(parent_directory, f"{account_name}")
+    os.makedirs(new_directory, exist_ok=True)
+
+    # original_zip_active = download_zip_from_s3(f"{account_name}/{account_name}_active_media.zip", account_name, "Active")
+    # original_zip_inactive = download_zip_from_s3(f"{account_name}/{account_name}_inactive_media.zip", account_name,
+    #                                              "Inactive")
     additional_files_active = {}
     additional_files_inactive = {}
     account_name_image = requests.get(account.image)
@@ -254,10 +259,14 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
                     image_data = response.content
                     if ad.media_type == "Image":
                         if ad.status == "Active":
-                            additional_files_active[f"{ad.id}.jpg"] = image_data
+                            # additional_files_active[f"{ad.id}.jpg"] = image_data
+                            with open(f"temporary_storage/{account_name}/{ad.id}.jpg", "wb", encoding="utf-8") as f:
+                                f.write(image_data)
                         else:
-                            additional_files_inactive[f"{ad.id}.jpg"] = image_data
-                        key = f"{account_name}/{ad.id}.jpg"
+                            # additional_files_inactive[f"{ad.id}.jpg"] = image_data
+                            with open(f"temporary_storage/{account_name}/{ad.id}.jpg", "wb", encoding="utf-8") as f:
+                                f.write(image_data)
+                        # key = f"{account_name}/{ad.id}.jpg"
                         api_ads.ad_downloadLink = f"https://s3.timeweb.com/" \
                                                   f"{bucket_name}/{account_name}/{ad.id}.jpg"
                         api_ads.ad_image = f"https://s3.timeweb.com/" \
@@ -269,40 +278,54 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
                         avatar_key = f"{account_name}/{ad.id}_avatar.jpg"
                         bucket_obj.put_object(Key=avatar_key, Body=BytesIO(image_avatar_data))
                         if ad.status == "Active":
-                            additional_files_active[f"{ad.id}.mp4"] = image_data
+                            # additional_files_active[f"{ad.id}.mp4"] = image_data
+                            with open(f"temporary_storage/{account_name}/{ad.id}.mp4", "wb", encoding="utf-8") as f:
+                                f.write(image_data)
                         else:
-                            additional_files_inactive[f"{ad.id}.mp4"] = image_data
-                        key = f"{account_name}/{ad.id}.mp4"
+                            # additional_files_inactive[f"{ad.id}.mp4"] = image_data
+                            with open(f"temporary_storage/{account_name}/{ad.id}.mp4", "wb", encoding="utf-8") as f:
+                                f.write(image_data)
+                        # key = f"{account_name}/{ad.id}.mp4"
                         api_ads.ad_downloadLink = f"https://s3.timeweb.com/" \
                                                   f"{bucket_name}/{account_name}/{ad.id}.mp4"
                         api_ads.ad_image = f"https://s3.timeweb.com/" \
                                            f"{bucket_name}/{account_name}/{ad.id}_avatar.jpg"
 
-                    bucket_obj.put_object(Key=key, Body=BytesIO(image_data))
+                    # bucket_obj.put_object(Key=key, Body=BytesIO(image_data))
             except:
                 pass
             db_sess.add(api_ads)
-    if original_zip_active is None:
-        with zipfile.ZipFile(f"temporary_zips/{account_name}_active_media.zip", 'w') as zip_file:
-            pass
-        modify_zip(f"temporary_zips/{account_name}_active_media.zip", additional_files_active)
-    else:
-        modify_zip(f"temporary_zips/{account_name}_active_media.zip", additional_files_active)
+    # if original_zip_active is None:
+    #     with zipfile.ZipFile(f"temporary_zips/{account_name}_active_media.zip", 'w') as zip_file:
+    #         pass
+    #     modify_zip(f"temporary_zips/{account_name}_active_media.zip", additional_files_active)
+    # else:
+    #     modify_zip(f"temporary_zips/{account_name}_active_media.zip", additional_files_active)
+    #
+    # if original_zip_inactive is None:
+    #     with zipfile.ZipFile(f"temporary_zips/{account_name}_inactive_media.zip", 'w') as zip_file:
+    #         pass
+    #     modify_zip(f"temporary_zips/{account_name}_inactive_media.zip", additional_files_inactive)
+    # else:
+    #     modify_zip(f"temporary_zips/{account_name}_inactive_media.zip", additional_files_inactive)
+    #
+    # upload_zip_to_s3(f"temporary_zips/{account_name}_active_media.zip",
+    #                  f"{account_name}/{account_name}_active_media.zip")
+    # upload_zip_to_s3(f"temporary_zips/{account_name}_inactive_media.zip",
+    #                  f"{account_name}/{account_name}_inactive_media.zip")
+    #
+    # os.remove(f"temporary_zips/{account_name}_active_media.zip")
+    # os.remove(f"temporary_zips/{account_name}_inactive_media.zip")
 
-    if original_zip_inactive is None:
-        with zipfile.ZipFile(f"temporary_zips/{account_name}_inactive_media.zip", 'w') as zip_file:
-            pass
-        modify_zip(f"temporary_zips/{account_name}_inactive_media.zip", additional_files_inactive)
-    else:
-        modify_zip(f"temporary_zips/{account_name}_inactive_media.zip", additional_files_inactive)
+    account_directory = f"temporary_storage/{account_name}"
 
-    upload_zip_to_s3(f"temporary_zips/{account_name}_active_media.zip",
-                     f"{account_name}/{account_name}_active_media.zip")
-    upload_zip_to_s3(f"temporary_zips/{account_name}_inactive_media.zip",
-                     f"{account_name}/{account_name}_inactive_media.zip")
+    for root, dirs, files in os.walk(account_directory):
+        for file_name in files:
+            file_path = f"{account_directory}/{file_name}"
+            print(f"{file_path}")
+            s3_client.upload_file(f'{file_path}', bucket_name, f"{account_name}/{file_name}")
 
-    os.remove(f"temporary_zips/{account_name}_active_media.zip")
-    os.remove(f"temporary_zips/{account_name}_inactive_media.zip")
+    # shutil.rmtree(account_directory)
 
     group = db_sess.query(ApiGroup).filter(ApiGroup.id == group_id).first()
     try:
