@@ -2,6 +2,7 @@ import json
 import os
 import time
 import traceback
+import datetime
 import zipfile
 import logging
 from zipfile import ZipFile
@@ -20,7 +21,6 @@ from data.accounts import Account as ApiAccount
 from data.groups import Group as ApiGroup
 from data.jobqueue import Job
 from data.advertisement import Advertisements
-import datetime
 from data import db_session
 
 import boto3
@@ -343,7 +343,7 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
 
 
 def cycle_parse_page():
-    current_date = datetime.now().strftime("%d-%m")
+    current_date = datetime.datetime.now().strftime("%d-%m")
     log_dir = "logs"
     # Формируем имя файла лога
     log_filename = f"{current_date}.log"
