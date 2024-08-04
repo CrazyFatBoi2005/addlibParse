@@ -85,7 +85,7 @@ bucket_obj = s3.Bucket(bucket_name)
 
 
 # start
-def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=None):
+def parse_page(id_: str, group_id: int, driver, platform=None, media=None, ip=None, url=None):
     db_session.global_init("databases/accounts.db")
     if url is None:
         url_with_filters = \
@@ -113,22 +113,7 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
     account = Account(url_with_filters)
     # options.add_argument("--headless")
     # profile_directory = r'%AppData%\Mozilla\Firefox\Profiles\nyilpyl1.adlibParsingProf'
-    profile_id = "432137886"
-    req_url_start = f"http://localhost:3001/v1.0/browser_profiles/{profile_id}/start?automation=1"
-    req_url_end = f"http://localhost:3001/v1.0/browser_profiles/{profile_id}/stop"
-    try:
-        requests.get(req_url_end)
-        time.sleep(5)
-    except:
-        pass
-    response = requests.get(req_url_start)
-    time.sleep(2)
-    response_json = response.json()
-    print(response_json)
-    port = response_json['automation']['port']
-    options = Options()
-    options.debugger_address = f'127.0.0.1:{port}'
-    driver = webdriver.Chrome(options=options)
+
     driver.get(url_with_filters)
     time.sleep(1)
     driver.get(url_with_filters)
@@ -180,13 +165,13 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
     print(f"Account total ads: {account.total_ads}")
 
     account.active_ads = account.count_active()
-    driver.close()
-    driver.quit()
-    try:
-        requests.get(req_url_end)
-        time.sleep(5)
-    except:
-        pass
+    # driver.close()
+    # driver.quit()
+    # try:
+    #     requests.get(req_url_end)
+    #     time.sleep(5)
+    # except:
+    #     pass
     print(f"End {account.name}.")
     account_id = account.id
 
@@ -390,12 +375,35 @@ def cycle_parse_page():
 
     accounts_list = db_sess.query(ApiAccount.acc_id, ApiAccount.group_id, ApiAccount.adlib_account_link, ApiAccount.account_name).all()
     db_sess.close()
+    profile_id = "432137886"
+    req_url_start = f"http://localhost:3001/v1.0/browser_profiles/{profile_id}/start?automation=1"
+    req_url_end = f"http://localhost:3001/v1.0/browser_profiles/{profile_id}/stop"
+    try:
+        requests.get(req_url_end)
+        time.sleep(5)
+    except:
+        pass
+    response = requests.get(req_url_start)
+    time.sleep(2)
+    response_json = response.json()
+    print(response_json)
+    port = response_json['automation']['port']
+    options = Options()
+    options.debugger_address = f'127.0.0.1:{port}'
+    driver = webdriver.Chrome(options=options)
     for acc in accounts_list:
         try:
-            parse_page(id_=acc[0], group_id=acc[1], url=acc[2])
+            parse_page(id_=acc[0], group_id=acc[1], url=acc[2], driver=driver)
         except Exception as e:
             if e is not KeyboardInterrupt:
                 logging.error(f"Account Name: {acc[3]}\nFell with an exception: {e}\nFull error info: {traceback.format_exc()}")
             else:
                 break
+    driver.close()
+    driver.quit()
+    try:
+        requests.get(req_url_end)
+        time.sleep(5)
+    except:
+        pass
 
