@@ -97,7 +97,7 @@ class Ad:
                     self.media_type = "Image"
 
                 except:
-                    self.download = ""
+                    self.download = "banned_ad_image.jpg"
                     self.image = self.download
                     self.media_type = "Video"
         """
@@ -108,9 +108,8 @@ class Ad:
             self.status = soup.find("span",
                                     class_="x8t9es0 xw23nyj xo1l8bm x63nzvj x108nfp6 xq9mrsl x1h4wwuj xeuugli x1i64zmx").get_text()"""
         date = soup.find_all("div", class_="x3nfvp2 x1e56ztr")[2].get_text().split(' ')
-        # date parse
         date = [i[:4] for i in date if i.isdigit() or i in dates or i in dates_eng or i[:4].isdigit()]
-
+        # still showing
         if len(date) == 3:
             day, month, year = int(date[0]), dates[date[1]], int(date[2])
             self.start_date = datetime.date(year, month, day)
@@ -118,6 +117,7 @@ class Ad:
             self.start_date = str(self.start_date)
             self.end_date = "_"
             self.status = "Active"
+        # already closed
         elif len(date) == 6:
             day, month, year = int(date[0]), dates[date[1]], int(date[2])
             self.start_date = datetime.date(year, month, day)
@@ -127,6 +127,7 @@ class Ad:
             self.duration = str((self.end_date - self.start_date).days)
             self.start_date = str(self.start_date)
             self.status = "Inactive"
+        # no status info
         else:
             self.start_date = datetime.date.today()
             self.duration = str(0)

@@ -8,6 +8,7 @@ import logging
 from zipfile import ZipFile
 
 import requests
+import selenium.common.exceptions
 from botocore.exceptions import NoCredentialsError
 from sqlalchemy.exc import IntegrityError
 from parse_api.classes import Account, Ad
@@ -169,7 +170,10 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
         if len(page_content) > 1500 or count >= 20:
             break
         time.sleep(1)
-        driver.execute_script('arguments[0].scrollIntoView(true)', footer)
+        try:
+            driver.execute_script('arguments[0].scrollIntoView(true)', footer)
+        except selenium.common.exceptions.TimeoutException:
+            break
     result = [Ad(element.get_attribute('innerHTML')) for element in page_content]
     account.ads = result.copy()
     account.total_ads = len(account.ads)
