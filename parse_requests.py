@@ -655,7 +655,7 @@ def create_parse_driver(profile_ids_list, cur_profile_idx=0):
     return driver
 
 
-def finish_parse_driver(driver, profile_ids_list, cur_profile_idx=0):
+def finish_parse_driver(driver, profile_ids_list, cur_profile_idx):
     req_url_end = f"http://localhost:3001/v1.0/browser_profiles/{profile_ids_list[cur_profile_idx]}/stop"
     driver.close()
     driver.quit()
@@ -667,7 +667,7 @@ def finish_parse_driver(driver, profile_ids_list, cur_profile_idx=0):
 
 
 def cycle_parse_page():
-    profile_ids_list = ["432137886", "433177480", "433183845"]
+    profile_ids_list = ["432137886", "433177480", "433183845", "433249334"]
     cur_profile_idx = 0
 
     current_date = datetime.datetime.now().strftime("%d-%m")
@@ -696,7 +696,7 @@ def cycle_parse_page():
     for idx, acc in enumerate(accounts_list):
         if idx % 2 == 0 and idx != 0:
             finish_parse_driver(driver, profile_ids_list, cur_profile_idx)
-
+            time.sleep(300)
             cur_profile_idx += 1
             if cur_profile_idx == len(profile_ids_list):
                 cur_profile_idx -= len(profile_ids_list)
