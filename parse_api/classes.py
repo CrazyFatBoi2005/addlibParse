@@ -97,7 +97,7 @@ class Ad:
                     self.media_type = "Image"
 
                 except:
-                    self.download = "banned_ad_image.jpg"
+                    self.download = "https://s3.timeweb.com/7b3ae2a6-1e521fbf-430f-4275-aea8-858d0059469b/banned_ad_image.jpg"
                     self.image = self.download
                     self.media_type = "Video"
         """
