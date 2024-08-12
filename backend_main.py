@@ -585,7 +585,7 @@ def main():
     db_session.global_init("databases/accounts.db")
     # from waitress import serve
     # serve(app, host='0.0.0.0', port=5000)
-    flask_scheduler.add_job(id='Start Default Task', func=cycle_parse_page,
+    flask_scheduler.add_job(id='Start Default Task', func=cycle_parse_page, args =[],
                             trigger='cron', hour=21, minute=33, second=0)
     flask_scheduler.start()
 
