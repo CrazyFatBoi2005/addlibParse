@@ -24,7 +24,7 @@ from data.groups import Group as ApiGroup
 from data.jobqueue import Job
 from data.advertisement import Advertisements
 from data import db_session
-
+from exceptions import EmptyAccountException
 import boto3
 from botocore.client import Config
 from io import BytesIO
@@ -177,6 +177,8 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
     result = [Ad(element.get_attribute('innerHTML')) for element in page_content]
     account.ads = result.copy()
     account.total_ads = len(account.ads)
+    if account.total_ads == 0:
+        raise EmptyAccountException()
     print(f"Account total ads: {account.total_ads}")
 
     account.active_ads = account.count_active()
@@ -444,6 +446,8 @@ def parse_page_cycle_v(id_: str, group_id: int, driver, platform=None, media=Non
     result = [Ad(element.get_attribute('innerHTML')) for element in page_content]
     account.ads = result.copy()
     account.total_ads = len(account.ads)
+    if account.total_ads == 0:
+        raise EmptyAccountException()
     print(f"Account total ads: {account.total_ads}")
 
     account.active_ads = account.count_active()
@@ -666,7 +670,7 @@ def finish_parse_driver(driver, profile_ids_list, cur_profile_idx):
         pass
 
 
-def cycle_parse_page():
+def cycle_parse_page(rerun_list=None):
     profile_ids_list = ["432137886", "433177480", "433183845", "433249334"]
     cur_profile_idx = 0
 
@@ -687,8 +691,12 @@ def cycle_parse_page():
     )
     db_session.global_init("databases/accounts.db")
     db_sess = db_session.create_session()
-
-    accounts_list = db_sess.query(ApiAccount.acc_id, ApiAccount.group_id, ApiAccount.adlib_account_link, ApiAccount.account_name).all()
+    if rerun_list is None:
+        accounts_list = db_sess.query(ApiAccount.acc_id, ApiAccount.group_id, ApiAccount.adlib_account_link,
+                                      ApiAccount.account_name).all()
+    else:
+        accounts_list = rerun_list
+    empty_accounts = []
     db_sess.close()
 
     driver = create_parse_driver(profile_ids_list, cur_profile_idx)
@@ -700,14 +708,19 @@ def cycle_parse_page():
             cur_profile_idx += 1
             if cur_profile_idx == len(profile_ids_list):
                 cur_profile_idx -= len(profile_ids_list)
-
             driver = create_parse_driver(profile_ids_list, cur_profile_idx)
 
         try:
             parse_page_cycle_v(id_=acc[0], group_id=acc[1], url=acc[2], driver=driver)
+        except EmptyAccountException:
+            empty_accounts.append(acc)
         except Exception as e:
             if e is not KeyboardInterrupt:
                 logging.error(f"Account Name: {acc[3]}\nFell with an exception: {e}\nFull error info: {traceback.format_exc()}")
             else:
                 break
+
+    if len(empty_accounts) > 0:
+        cycle_parse_page(rerun_list=empty_accounts)
+
 
