@@ -399,8 +399,11 @@ def parse_page_cycle_v(id_: str, group_id: int, driver, platform=None, media=Non
     account = Account(url_with_filters)
     # options.add_argument("--headless")
     # profile_directory = r'%AppData%\Mozilla\Firefox\Profiles\nyilpyl1.adlibParsingProf'
-
-    driver.get(url_with_filters)
+    try:
+        driver.get(url_with_filters)
+    except Exception as e:
+        driver.refresh()
+        time.sleep(1)
     time.sleep(1)
     try:
         _ = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//div[@class='_7jvw x2izyaf x1hq5gj4 x1d52u69']")))
@@ -713,6 +716,7 @@ def cycle_parse_page(rerun_list=None):
         try:
             parse_page_cycle_v(id_=acc[0], group_id=acc[1], url=acc[2], driver=driver)
         except EmptyAccountException:
+            logging.error(f"Account Name: {acc[3]}\nNo ads, account added to rerun list.\n")
             empty_accounts.append(acc)
         except Exception as e:
             if e is not KeyboardInterrupt:
