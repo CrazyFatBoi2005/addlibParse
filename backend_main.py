@@ -586,11 +586,11 @@ def main():
     # from waitress import serve
     # serve(app, host='0.0.0.0', port=5000)
     flask_scheduler.add_job(id='Start Default Task', func=cycle_parse_page,
-                            trigger='cron', hour=16, minute=0, second=0)
+                            trigger='cron', hour=3, minute=12, second=30)
     flask_scheduler.start()
 
-    socketio_.run(app, host="178.253.42.233", debug=True, allow_unsafe_werkzeug=True, use_reloader=False)
-
+    # socketio_.run(app, host="178.253.42.233", debug=True, allow_unsafe_werkzeug=True, use_reloader=False)
+    socketio_.run(app, host="127.0.0.1", debug=True, allow_unsafe_werkzeug=True, use_reloader=False)
 
 if __name__ == '__main__':
     main()

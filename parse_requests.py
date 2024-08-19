@@ -1,34 +1,30 @@
+import datetime
 import json
+import logging
 import os
-import shutil
 import time
 import traceback
-import datetime
-import zipfile
-import logging
-from zipfile import ZipFile
-
-import requests
-import selenium.common.exceptions
-from botocore.exceptions import NoCredentialsError
-from sqlalchemy.exc import IntegrityError
-from parse_api.classes import Account, Ad
-from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
-from data.accounts import Account as ApiAccount
-from data.groups import Group as ApiGroup
-from data.jobqueue import Job
-from data.advertisement import Advertisements
-from data import db_session
-from exceptions import EmptyAccountException
-import boto3
-from botocore.client import Config
 from io import BytesIO
 
+import boto3
+import requests
+import selenium.common.exceptions
+from botocore.client import Config
+from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from sqlalchemy.exc import IntegrityError
+
+from data import db_session
+from data.accounts import Account as ApiAccount
+from data.advertisement import Advertisements
+from data.groups import Group as ApiGroup
+from data.jobqueue import Job
+from exceptions import EmptyAccountException
+from parse_api.classes import Account, Ad
 
 rename_filter = {
     'All Platforms': "",
@@ -148,8 +144,12 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
     except:
         account.image = "#"
     print(f"To Parse: {account.name}, {account.nickname}")
-    footer = driver.find_element(By.XPATH, "//div[@class='xq4jnbd x78zum5 xdt5ytf xr1yuqi xkrivgy x4ii5y1 x1gryazu "
-                                           "x1dr75xp xz9dl7a']")
+    try:
+        footer = driver.find_element(By.XPATH, "//div[@class='xq4jnbd x78zum5 xdt5ytf xr1yuqi xkrivgy x4ii5y1 x1gryazu "
+                                               "x1dr75xp xz9dl7a']")
+    except selenium.common.exceptions.NoSuchElementException:
+        driver.quit()
+        raise EmptyAccountException
     account.link = url_with_filters
     last_len = 0
     count = 0
@@ -178,6 +178,7 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
     account.ads = result.copy()
     account.total_ads = len(account.ads)
     if account.total_ads == 0:
+        driver.quit()
         raise EmptyAccountException()
     print(f"Account total ads: {account.total_ads}")
 
@@ -420,8 +421,12 @@ def parse_page_cycle_v(id_: str, group_id: int, driver, platform=None, media=Non
     except:
         account.image = "#"
     print(f"To Parse: {account.name}, {account.nickname}")
-    footer = driver.find_element(By.XPATH, "//div[@class='xq4jnbd x78zum5 xdt5ytf xr1yuqi xkrivgy x4ii5y1 x1gryazu "
-                                           "x1dr75xp xz9dl7a']")
+    try:
+        footer = driver.find_element(By.XPATH, "//div[@class='xq4jnbd x78zum5 xdt5ytf xr1yuqi xkrivgy x4ii5y1 x1gryazu "
+                                               "x1dr75xp xz9dl7a']")
+    except selenium.common.exceptions.NoSuchElementException:
+        driver.quit()
+        raise EmptyAccountException
     account.link = url_with_filters
     last_len = 0
     count = 0
@@ -450,6 +455,7 @@ def parse_page_cycle_v(id_: str, group_id: int, driver, platform=None, media=Non
     account.ads = result.copy()
     account.total_ads = len(account.ads)
     if account.total_ads == 0:
+        driver.quit()
         raise EmptyAccountException()
     print(f"Account total ads: {account.total_ads}")
 

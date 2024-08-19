@@ -1,24 +1,11 @@
-import os
-import shutil
-import time
-import zipfile
-from io import BytesIO
-
-import requests
-from apscheduler.jobstores.base import ConflictingIdError
-
-from data import db_session
 import multiprocessing as mp
-from flask import Flask, jsonify, send_file, request
+import os
+
 from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.interval import IntervalTrigger
-from apscheduler.triggers.cron import CronTrigger
-from data.jobqueue import Job
-from data.accounts import Account
-from data.groups import Group
-from data.advertisement import Advertisements
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
+from data import db_session
 from parse_requests import parse_page
 
 app = Flask(__name__)

@@ -1,5 +1,5 @@
 import datetime
-import urllib.request
+
 from bs4 import BeautifulSoup
 
 platform_styles = {
