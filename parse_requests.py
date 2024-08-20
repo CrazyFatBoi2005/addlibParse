@@ -6,6 +6,8 @@ import time
 import traceback
 from io import BytesIO
 
+from urllib3.exceptions import MaxRetryError
+
 import boto3
 import requests
 import selenium.common.exceptions
@@ -670,8 +672,11 @@ def create_parse_driver(profile_ids_list, cur_profile_idx=0):
 
 def finish_parse_driver(driver, profile_ids_list, cur_profile_idx):
     req_url_end = f"http://localhost:3001/v1.0/browser_profiles/{profile_ids_list[cur_profile_idx]}/stop"
-    driver.close()
-    driver.quit()
+    try:
+        driver.close()
+        driver.quit()
+    except MaxRetryError:
+        pass
     try:
         requests.get(req_url_end)
         time.sleep(5)
