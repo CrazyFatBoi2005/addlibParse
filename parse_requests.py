@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 import os
+import random
 import time
 import traceback
 from io import BytesIO
@@ -39,15 +40,14 @@ rename_filter = {
     'Video': "&media_type=video"
 }
 
-
 s3 = boto3.resource(
-        's3',
-        endpoint_url='https://s3.timeweb.com',
-        region_name='ru-1',
-        aws_access_key_id='it27776',
-        aws_secret_access_key='1cad6c15403631a01cc0bf26a5ce1524',
-        config=Config(s3={'addressing_style': 'path'})
-    )
+    's3',
+    endpoint_url='https://s3.timeweb.com',
+    region_name='ru-1',
+    aws_access_key_id='it27776',
+    aws_secret_access_key='1cad6c15403631a01cc0bf26a5ce1524',
+    config=Config(s3={'addressing_style': 'path'})
+)
 
 s3_client = boto3.client(
     's3',
@@ -60,6 +60,7 @@ s3_client = boto3.client(
 
 bucket_name = "7b3ae2a6-1e521fbf-430f-4275-aea8-858d0059469b"
 bucket_obj = s3.Bucket(bucket_name)
+
 
 # def download_zip_from_s3(s3_key, account_name, status):
 #     try:
@@ -132,17 +133,23 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
     driver.get(url_with_filters)
     time.sleep(1)
     try:
-        _ = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//div[@class='_7jvw x2izyaf x1hq5gj4 x1d52u69']")))
+        _ = WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.XPATH, "//div[@class='_7jvw x2izyaf x1hq5gj4 x1d52u69']")))
     except TimeoutException:
         driver.refresh()
         time.sleep(1)
-    account.name = driver.find_element(By.XPATH, "//div[@class='x8t9es0 x1ldc4aq x1xlr1w8 x1cgboj8 x4hq6eo xq9mrsl x1yc453h x1h4wwuj xeuugli']").text
+    account.name = driver.find_element(By.XPATH,
+                                       "//div[@class='x8t9es0 x1ldc4aq x1xlr1w8 x1cgboj8 x4hq6eo xq9mrsl x1yc453h x1h4wwuj xeuugli']").text
     try:
-        account.nickname = "@" + driver.find_elements(By.XPATH, "//a[@class='xt0psk2 x1hl2dhg xt0b8zv x8t9es0 x1fvot60 xxio538 xjnfcd9 xq9mrsl x1yc453h x1h4wwuj x1fcty0u']")[-1].get_attribute("href").split("/")[-1]
+        account.nickname = "@" + driver.find_elements(By.XPATH,
+                                                      "//a[@class='xt0psk2 x1hl2dhg xt0b8zv x8t9es0 x1fvot60 xxio538 xjnfcd9 xq9mrsl x1yc453h x1h4wwuj x1fcty0u']")[
+            -1].get_attribute("href").split("/")[-1]
     except:
         account.nickname = "@"
     try:
-        account.image = driver.find_element(By.XPATH, "//img[@class='xl1xv1r x78zum5 x193iq5w x1us19tq xkrh0ho x1aqa79q x10btfu9 x1e152vy']").get_attribute("src")
+        account.image = driver.find_element(By.XPATH,
+                                            "//img[@class='xl1xv1r x78zum5 x193iq5w x1us19tq xkrh0ho x1aqa79q x10btfu9 x1e152vy']").get_attribute(
+            "src")
     except:
         account.image = "#"
     print(f"To Parse: {account.name}, {account.nickname}")
@@ -255,7 +262,6 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
             api_ads.ad_downloadLink = ad.download
             api_ads.ad_platform = ad.platforms
             api_ads.account_id = account.id
-
 
             try:
 
@@ -409,17 +415,23 @@ def parse_page_cycle_v(id_: str, group_id: int, driver, platform=None, media=Non
         time.sleep(1)
     time.sleep(1)
     try:
-        _ = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//div[@class='_7jvw x2izyaf x1hq5gj4 x1d52u69']")))
+        _ = WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.XPATH, "//div[@class='_7jvw x2izyaf x1hq5gj4 x1d52u69']")))
     except TimeoutException:
         driver.refresh()
         time.sleep(1)
-    account.name = driver.find_element(By.XPATH, "//div[@class='x8t9es0 x1ldc4aq x1xlr1w8 x1cgboj8 x4hq6eo xq9mrsl x1yc453h x1h4wwuj xeuugli']").text
+    account.name = driver.find_element(By.XPATH,
+                                       "//div[@class='x8t9es0 x1ldc4aq x1xlr1w8 x1cgboj8 x4hq6eo xq9mrsl x1yc453h x1h4wwuj xeuugli']").text
     try:
-        account.nickname = "@" + driver.find_elements(By.XPATH, "//a[@class='xt0psk2 x1hl2dhg xt0b8zv x8t9es0 x1fvot60 xxio538 xjnfcd9 xq9mrsl x1yc453h x1h4wwuj x1fcty0u']")[-1].get_attribute("href").split("/")[-1]
+        account.nickname = "@" + driver.find_elements(By.XPATH,
+                                                      "//a[@class='xt0psk2 x1hl2dhg xt0b8zv x8t9es0 x1fvot60 xxio538 xjnfcd9 xq9mrsl x1yc453h x1h4wwuj x1fcty0u']")[
+            -1].get_attribute("href").split("/")[-1]
     except:
         account.nickname = "@"
     try:
-        account.image = driver.find_element(By.XPATH, "//img[@class='xl1xv1r x78zum5 x193iq5w x1us19tq xkrh0ho x1aqa79q x10btfu9 x1e152vy']").get_attribute("src")
+        account.image = driver.find_element(By.XPATH,
+                                            "//img[@class='xl1xv1r x78zum5 x193iq5w x1us19tq xkrh0ho x1aqa79q x10btfu9 x1e152vy']").get_attribute(
+            "src")
     except:
         account.image = "#"
     print(f"To Parse: {account.name}, {account.nickname}")
@@ -532,7 +544,6 @@ def parse_page_cycle_v(id_: str, group_id: int, driver, platform=None, media=Non
             api_ads.ad_downloadLink = ad.download
             api_ads.ad_platform = ad.platforms
             api_ads.account_id = account.id
-
 
             try:
 
@@ -708,6 +719,7 @@ def cycle_parse_page(rerun_list=None):
     if rerun_list is None:
         accounts_list = db_sess.query(ApiAccount.acc_id, ApiAccount.group_id, ApiAccount.adlib_account_link,
                                       ApiAccount.account_name).all()
+        random.shuffle(accounts_list)
     else:
         accounts_list = rerun_list
     empty_accounts = []
@@ -731,11 +743,10 @@ def cycle_parse_page(rerun_list=None):
             empty_accounts.append(acc)
         except Exception as e:
             if e is not KeyboardInterrupt:
-                logging.error(f"Account Name: {acc[3]}\nFell with an exception: {e}\nFull error info: {traceback.format_exc()}")
+                logging.error(
+                    f"Account Name: {acc[3]}\nFell with an exception: {e}\nFull error info: {traceback.format_exc()}")
             else:
                 break
 
     if len(empty_accounts) > 0:
         cycle_parse_page(rerun_list=empty_accounts)
-
-
