@@ -451,7 +451,7 @@ def parse_page_cycle_v(id_: str, group_id: int, driver, platform=None, media=Non
         time.sleep(1)
         try:
             driver.execute_script('arguments[0].scrollIntoView(true)', footer)
-        except selenium.common.exceptions.TimeoutException:
+        except TimeoutException:
             break
     result = [Ad(element.get_attribute('innerHTML')) for element in page_content]
     account.ads = result.copy()
@@ -718,7 +718,7 @@ def cycle_parse_page(rerun_list=None):
     for idx, acc in enumerate(accounts_list):
         if idx % 2 == 0 and idx != 0:
             finish_parse_driver(driver, profile_ids_list, cur_profile_idx)
-            time.sleep(300)
+            time.sleep(250)
             cur_profile_idx += 1
             if cur_profile_idx == len(profile_ids_list):
                 cur_profile_idx -= len(profile_ids_list)
