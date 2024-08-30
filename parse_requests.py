@@ -157,6 +157,7 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
         footer = driver.find_element(By.XPATH, "//div[@class='xq4jnbd x78zum5 xdt5ytf xr1yuqi xkrivgy x4ii5y1 x1gryazu "
                                                "x1dr75xp xz9dl7a']")
     except selenium.common.exceptions.NoSuchElementException:
+        driver.close()
         driver.quit()
         raise EmptyAccountException
     account.link = url_with_filters
@@ -187,6 +188,7 @@ def parse_page(id_: str, group_id: int, platform=None, media=None, ip=None, url=
     account.ads = result.copy()
     account.total_ads = len(account.ads)
     if account.total_ads == 0:
+        driver.close()
         driver.quit()
         raise EmptyAccountException()
     print(f"Account total ads: {account.total_ads}")
@@ -411,8 +413,9 @@ def parse_page_cycle_v(id_: str, group_id: int, driver, platform=None, media=Non
     try:
         driver.get(url_with_filters)
     except Exception as e:
-        driver.refresh()
-        time.sleep(1)
+        driver.close()
+        driver.quit()
+        raise EmptyAccountException
     time.sleep(1)
     try:
         _ = WebDriverWait(driver, 20).until(
@@ -439,6 +442,7 @@ def parse_page_cycle_v(id_: str, group_id: int, driver, platform=None, media=Non
         footer = driver.find_element(By.XPATH, "//div[@class='xq4jnbd x78zum5 xdt5ytf xr1yuqi xkrivgy x4ii5y1 x1gryazu "
                                                "x1dr75xp xz9dl7a']")
     except selenium.common.exceptions.NoSuchElementException:
+        driver.close()
         driver.quit()
         raise EmptyAccountException
     account.link = url_with_filters
@@ -469,6 +473,7 @@ def parse_page_cycle_v(id_: str, group_id: int, driver, platform=None, media=Non
     account.ads = result.copy()
     account.total_ads = len(account.ads)
     if account.total_ads == 0:
+        driver.close()
         driver.quit()
         raise EmptyAccountException()
     print(f"Account total ads: {account.total_ads}")
